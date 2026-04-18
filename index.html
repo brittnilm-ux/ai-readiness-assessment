@@ -1,620 +1,496 @@
-
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>AI Readiness Assessment</title>
+<link href="https://fonts.googleapis.com/css2?family=Lora:ital,wght@0,400;0,500;1,400&family=DM+Sans:wght@300;400;500&display=swap" rel="stylesheet">
+<script src="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/4.4.1/chart.umd.js"></script>
 <style>
-  @import url('https://fonts.googleapis.com/css2?family=Lora:ital,wght@0,400;0,500;1,400&family=DM+Sans:wght@300;400;500&display=swap');
-  *{box-sizing:border-box;margin:0;padding:0}
-  #app{font-family:'DM Sans',system-ui,sans-serif;color:var(--color-text-primary);max-width:680px}
-  .screen{display:none;padding:2rem 0}.screen.active{display:block}
-  .tag{display:inline-block;font-size:11px;font-weight:500;letter-spacing:.08em;text-transform:uppercase;color:#8B6F47;background:var(--color-background-secondary);border:.5px solid var(--color-border-tertiary);padding:4px 10px;border-radius:20px;margin-bottom:1rem}
-  h1.hero{font-family:'Lora',serif;font-size:30px;font-weight:400;line-height:1.3;color:var(--color-text-primary);margin-bottom:1rem}
-  h1.hero em{font-style:italic;color:#8B6F47}
-  .lead{font-size:15px;line-height:1.7;color:var(--color-text-secondary);margin-bottom:1.5rem;max-width:520px}
-  .dims-grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(160px,1fr));gap:10px;margin-bottom:1.5rem}
-  .dim-card{background:var(--color-background-secondary);border:.5px solid var(--color-border-tertiary);border-radius:var(--border-radius-lg);padding:12px 14px}
-  .dim-card .dn{font-size:13px;font-weight:500;color:var(--color-text-primary);margin-bottom:2px}
-  .dim-card .dc{font-size:12px;color:var(--color-text-secondary)}
-  .btn-primary{display:inline-flex;align-items:center;gap:8px;background:#3D2E1A;color:#FAF7F2;border:none;padding:13px 26px;border-radius:var(--border-radius-lg);font-family:'DM Sans',sans-serif;font-size:14px;font-weight:500;cursor:pointer;transition:opacity .15s}
-  .btn-primary:hover{opacity:.85}
-  .btn-ghost{display:inline-flex;align-items:center;gap:6px;background:transparent;color:var(--color-text-secondary);border:.5px solid var(--color-border-tertiary);padding:10px 18px;border-radius:var(--border-radius-lg);font-family:'DM Sans',sans-serif;font-size:13px;cursor:pointer;transition:background .15s}
-  .btn-ghost:hover{background:var(--color-background-secondary)}
-  .prog-meta{display:flex;justify-content:space-between;font-size:12px;color:var(--color-text-secondary);margin-bottom:6px}
-  .prog-outer{height:3px;background:var(--color-background-secondary);border-radius:2px;overflow:hidden;margin-bottom:1.5rem}
-  .prog-inner{height:100%;background:#8B6F47;border-radius:2px;transition:width .4s ease}
-  .dim-label{display:inline-flex;align-items:center;gap:6px;font-size:11px;font-weight:500;letter-spacing:.06em;text-transform:uppercase;color:#8B6F47;margin-bottom:.5rem}
-  .dim-dot{width:7px;height:7px;border-radius:50%;background:#8B6F47}
-  .q-text{font-family:'Lora',serif;font-size:19px;font-weight:400;line-height:1.45;color:var(--color-text-primary);margin-bottom:1.5rem}
-  .opts{display:flex;flex-direction:column;gap:9px;margin-bottom:1.75rem}
-  .opt{display:flex;align-items:flex-start;gap:11px;padding:13px 15px;background:var(--color-background-primary);border:.5px solid var(--color-border-tertiary);border-radius:var(--border-radius-lg);cursor:pointer;text-align:left;font-family:'DM Sans',sans-serif;font-size:13px;line-height:1.5;color:var(--color-text-primary);transition:border-color .15s,background .15s}
-  .opt:hover{border-color:var(--color-border-secondary);background:var(--color-background-secondary)}
-  .opt.sel{border-color:#8B6F47;background:var(--color-background-secondary)}
-  .opt-n{width:20px;height:20px;min-width:20px;border-radius:50%;background:var(--color-background-secondary);border:.5px solid var(--color-border-secondary);display:flex;align-items:center;justify-content:center;font-size:10px;font-weight:500;color:var(--color-text-secondary);margin-top:1px}
-  .opt.sel .opt-n{background:#8B6F47;border-color:#8B6F47;color:#FAF7F2}
-  .nav-row{display:flex;align-items:center;justify-content:space-between;gap:12px}
-  .q-ctr{font-size:12px;color:var(--color-text-secondary)}
-  .loading-screen{text-align:center;padding:3.5rem 2rem}
-  .dots{display:flex;gap:8px;justify-content:center;margin:1.5rem 0}
-  .dots span{width:7px;height:7px;border-radius:50%;background:#8B6F47;animation:bounce 1.2s ease-in-out infinite}
-  .dots span:nth-child(2){animation-delay:.2s}.dots span:nth-child(3){animation-delay:.4s}
-  @keyframes bounce{0%,80%,100%{transform:scale(.6);opacity:.4}40%{transform:scale(1);opacity:1}}
-  .rep-header{border-bottom:.5px solid var(--color-border-tertiary);padding-bottom:1.5rem;margin-bottom:1.75rem}
-  .score-grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(170px,1fr));gap:9px;margin-bottom:1.75rem}
-  .sc{background:var(--color-background-secondary);border-radius:var(--border-radius-lg);padding:14px}
-  .sc .sd{font-size:10px;font-weight:500;letter-spacing:.06em;text-transform:uppercase;color:var(--color-text-secondary);margin-bottom:5px}
-  .sc .sv{font-size:26px;font-weight:500;color:var(--color-text-primary);line-height:1;margin-bottom:5px}
-  .sc .sb-o{height:3px;background:var(--color-background-primary);border-radius:2px;overflow:hidden}
-  .sc .sb-i{height:100%;border-radius:2px}
-  .bench-row{display:flex;align-items:center;gap:12px;margin-bottom:9px;font-size:13px}
-  .bench-lbl{width:115px;min-width:115px;color:var(--color-text-secondary);font-size:12px}
-  .bench-track{flex:1;height:5px;background:var(--color-background-secondary);border-radius:3px;position:relative}
-  .bench-fill{height:100%;border-radius:3px;position:absolute;top:0;left:0}
-  .bench-peer{position:absolute;top:-5px;width:2px;height:15px;background:var(--color-text-tertiary);border-radius:1px}
-  .bench-val{min-width:28px;text-align:right;font-weight:500;font-size:12px}
-  .rec-item{border-left:2px solid #8B6F47;padding:11px 14px;margin-bottom:10px;background:var(--color-background-secondary);border-radius:0 var(--border-radius-md) var(--border-radius-md) 0}
-  .rec-item.hi{border-left-color:#B55A35}
-  .rec-area{font-size:10px;font-weight:500;letter-spacing:.06em;text-transform:uppercase;color:#8B6F47;margin-bottom:3px}
-  .rec-item.hi .rec-area{color:#B55A35}
-  .rec-txt{font-size:13px;line-height:1.6;color:var(--color-text-primary)}
-  .lib-grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(190px,1fr));gap:9px;margin-bottom:1.75rem}
-  .lib-card{background:var(--color-background-primary);border:.5px solid var(--color-border-tertiary);border-radius:var(--border-radius-lg);padding:14px;cursor:pointer;transition:border-color .15s}
-  .lib-card:hover{border-color:var(--color-border-secondary)}
-  .lib-name{font-size:13px;font-weight:500;color:var(--color-text-primary);margin-bottom:3px}
-  .lib-desc{font-size:12px;line-height:1.5;color:var(--color-text-secondary)}
-
-  /* Action plan styles */
-  .plan-section{margin-top:2rem;border-top:.5px solid var(--color-border-tertiary);padding-top:1.75rem}
-  .plan-tabs{display:flex;gap:8px;margin-bottom:1.5rem;flex-wrap:wrap}
-  .plan-tab{padding:7px 14px;border-radius:20px;font-size:12px;font-weight:500;cursor:pointer;border:.5px solid var(--color-border-tertiary);background:var(--color-background-secondary);color:var(--color-text-secondary);transition:all .15s}
-  .plan-tab.active{color:#FAF7F2;border-color:transparent}
-  .plan-content{display:none}.plan-content.active{display:block}
-  .plan-intro{font-size:13px;line-height:1.7;color:var(--color-text-secondary);padding:14px;background:var(--color-background-secondary);border-radius:var(--border-radius-lg);margin-bottom:1.25rem;border-left:2px solid #8B6F47;border-radius:0 var(--border-radius-md) var(--border-radius-md) 0}
-  .week-banner{padding:10px 14px;border-radius:var(--border-radius-md);margin-bottom:10px;margin-top:1.25rem}
-  .week-banner .wl{font-size:10px;font-weight:500;letter-spacing:.08em;text-transform:uppercase;color:rgba(255,255,255,.75);margin-bottom:2px}
-  .week-banner .wt{font-size:13px;font-style:italic;color:#FAF7F2}
-  .task-list{display:flex;flex-direction:column;gap:8px;margin-bottom:4px}
-  .task-item{background:var(--color-background-secondary);border-radius:var(--border-radius-md);padding:12px 14px;border-left:2px solid transparent}
-  .task-day{font-size:10px;font-weight:500;letter-spacing:.05em;text-transform:uppercase;margin-bottom:3px}
-  .task-title{font-size:13px;font-weight:500;color:var(--color-text-primary);margin-bottom:3px}
-  .task-desc{font-size:12px;line-height:1.6;color:var(--color-text-secondary);margin-bottom:4px}
-  .task-outcome{font-size:11px;font-style:italic;color:var(--color-text-secondary)}
-  .plan-reflection{font-size:12px;line-height:1.7;color:var(--color-text-secondary);margin-top:1.25rem;padding-top:1rem;border-top:.5px solid var(--color-border-tertiary)}
+*{box-sizing:border-box;margin:0;padding:0}
+body{background:#FAF7F2;font-family:'DM Sans',system-ui,sans-serif;color:#3D2E1A;min-height:100vh;padding:2rem 1rem}
+#app{max-width:680px;margin:0 auto}
+.screen{display:none;padding:2rem 0}.screen.active{display:block}
+.tag{display:inline-block;font-size:11px;font-weight:500;letter-spacing:.08em;text-transform:uppercase;color:#8B6F47;background:#F0EBE3;border:0.5px solid #E0D5C5;padding:4px 10px;border-radius:20px;margin-bottom:1rem}
+h1.hero{font-family:'Lora',serif;font-size:30px;font-weight:400;line-height:1.3;color:#3D2E1A;margin-bottom:1rem}
+h1.hero em{font-style:italic;color:#8B6F47}
+.lead{font-size:15px;line-height:1.7;color:#6B5240;margin-bottom:1.5rem;max-width:520px}
+.dims-grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(150px,1fr));gap:10px;margin-bottom:1.5rem}
+.dim-card{background:#F0EBE3;border:0.5px solid #E0D5C5;border-radius:12px;padding:12px 14px}
+.dim-card .dn{font-size:13px;font-weight:500;color:#3D2E1A;margin-bottom:2px}
+.dim-card .dc{font-size:12px;color:#8B6F47}
+.btn-primary{display:inline-flex;align-items:center;gap:8px;background:#3D2E1A;color:#FAF7F2;border:none;padding:13px 26px;border-radius:12px;font-family:'DM Sans',sans-serif;font-size:14px;font-weight:500;cursor:pointer;transition:opacity .15s}
+.btn-primary:hover{opacity:.85}
+.btn-ghost{display:inline-flex;align-items:center;gap:6px;background:transparent;color:#6B5240;border:0.5px solid #E0D5C5;padding:10px 18px;border-radius:12px;font-family:'DM Sans',sans-serif;font-size:13px;cursor:pointer;transition:background .15s}
+.btn-ghost:hover{background:#F0EBE3}
+.prog-meta{display:flex;justify-content:space-between;font-size:12px;color:#8B6F47;margin-bottom:6px}
+.prog-outer{height:3px;background:#E8E0D0;border-radius:2px;overflow:hidden;margin-bottom:1.5rem}
+.prog-inner{height:100%;background:#8B6F47;border-radius:2px;transition:width .4s ease}
+.dim-label{display:inline-flex;align-items:center;gap:6px;font-size:11px;font-weight:500;letter-spacing:.06em;text-transform:uppercase;color:#8B6F47;margin-bottom:.5rem}
+.dim-dot{width:7px;height:7px;border-radius:50%;background:#8B6F47}
+.q-text{font-family:'Lora',serif;font-size:19px;font-weight:400;line-height:1.45;color:#3D2E1A;margin-bottom:1.5rem}
+.opts{display:flex;flex-direction:column;gap:9px;margin-bottom:1.75rem}
+.opt{display:flex;align-items:flex-start;gap:11px;padding:13px 15px;background:#fff;border:0.5px solid #E0D5C5;border-radius:12px;cursor:pointer;text-align:left;font-family:'DM Sans',sans-serif;font-size:13px;line-height:1.5;color:#3D2E1A;transition:border-color .15s,background .15s;width:100%}
+.opt:hover{border-color:#C4B49A;background:#F5F0E8}
+.opt.sel{border-color:#8B6F47;background:#F5F0E8}
+.opt-n{width:20px;height:20px;min-width:20px;border-radius:50%;background:#F0EBE3;border:0.5px solid #C4B49A;display:flex;align-items:center;justify-content:center;font-size:10px;font-weight:500;color:#8B6F47;margin-top:1px;flex-shrink:0}
+.opt.sel .opt-n{background:#8B6F47;border-color:#8B6F47;color:#FAF7F2}
+.nav-row{display:flex;align-items:center;justify-content:space-between;gap:12px}
+.q-ctr{font-size:12px;color:#9C8B78}
+.loading-wrap{text-align:center;padding:4rem 2rem}
+.dots{display:flex;gap:8px;justify-content:center;margin:1.5rem 0}
+.dots span{width:7px;height:7px;border-radius:50%;background:#8B6F47;animation:bounce 1.2s ease-in-out infinite}
+.dots span:nth-child(2){animation-delay:.2s}.dots span:nth-child(3){animation-delay:.4s}
+@keyframes bounce{0%,80%,100%{transform:scale(.6);opacity:.4}40%{transform:scale(1);opacity:1}}
+.rep-header{border-bottom:0.5px solid #E8E0D0;padding-bottom:1.5rem;margin-bottom:1.75rem}
+.score-grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(160px,1fr));gap:9px;margin-bottom:1.75rem}
+.sc{background:#F0EBE3;border-radius:12px;padding:14px}
+.sc-lbl{font-size:10px;font-weight:500;letter-spacing:.06em;text-transform:uppercase;color:#9C8B78;margin-bottom:5px}
+.sc-val{font-size:26px;font-weight:500;color:#3D2E1A;line-height:1;margin-bottom:5px}
+.sc-bar-o{height:3px;background:#E8E0D0;border-radius:2px;overflow:hidden}
+.sc-bar-i{height:100%;border-radius:2px}
+.section-title{font-family:'Lora',serif;font-size:17px;font-weight:400;margin-bottom:.75rem;color:#3D2E1A}
+.bench-row{display:flex;align-items:center;gap:12px;margin-bottom:9px}
+.bench-lbl{width:130px;min-width:130px;color:#9C8B78;font-size:12px}
+.bench-track{flex:1;height:5px;background:#E8E0D0;border-radius:3px;position:relative}
+.bench-fill{height:100%;border-radius:3px;position:absolute;top:0;left:0}
+.bench-peer{position:absolute;top:-5px;width:2px;height:15px;background:#9C8B78;border-radius:1px}
+.bench-val{min-width:28px;text-align:right;font-weight:500;font-size:12px;color:#3D2E1A}
+.rec-item{border-left:2px solid #8B6F47;padding:11px 14px;margin-bottom:10px;background:#F0EBE3;border-radius:0 8px 8px 0}
+.rec-item.hi{border-left-color:#B55A35}
+.rec-area{font-size:10px;font-weight:500;letter-spacing:.06em;text-transform:uppercase;color:#8B6F47;margin-bottom:3px}
+.rec-item.hi .rec-area{color:#B55A35}
+.rec-txt{font-size:13px;line-height:1.6;color:#3D2E1A}
+.lib-grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(180px,1fr));gap:9px;margin-bottom:1.75rem}
+.lib-card{background:#fff;border:0.5px solid #E0D5C5;border-radius:12px;padding:14px}
+.lib-name{font-size:13px;font-weight:500;color:#3D2E1A;margin-bottom:3px}
+.lib-desc{font-size:12px;line-height:1.5;color:#9C8B78}
+.plan-section{margin-top:2rem;border-top:0.5px solid #E8E0D0;padding-top:1.75rem}
+.plan-tabs{display:flex;gap:8px;margin-bottom:1.5rem;flex-wrap:wrap}
+.plan-tab{padding:7px 14px;border-radius:20px;font-size:12px;font-weight:500;cursor:pointer;border:0.5px solid #E0D5C5;background:#F0EBE3;color:#9C8B78;font-family:'DM Sans',sans-serif}
+.plan-tab.active{color:#FAF7F2;border-color:transparent}
+.plan-content{display:none}.plan-content.active{display:block}
+.plan-intro{font-size:13px;line-height:1.7;color:#6B5240;padding:14px;background:#F0EBE3;border-left:2px solid #8B6F47;border-radius:0 8px 8px 0;margin-bottom:1.25rem}
+.week-banner{padding:10px 14px;border-radius:8px;margin-bottom:10px;margin-top:1.25rem}
+.week-lbl{font-size:10px;font-weight:500;letter-spacing:.08em;text-transform:uppercase;color:rgba(255,255,255,.75);margin-bottom:2px}
+.week-theme{font-size:13px;font-style:italic;color:#FAF7F2}
+.task-list{display:flex;flex-direction:column;gap:8px;margin-bottom:4px}
+.task-item{background:#F0EBE3;border-radius:8px;padding:12px 14px;border-left:2px solid transparent}
+.task-day{font-size:10px;font-weight:500;letter-spacing:.05em;text-transform:uppercase;margin-bottom:3px}
+.task-title{font-size:13px;font-weight:500;color:#3D2E1A;margin-bottom:3px}
+.task-desc{font-size:12px;line-height:1.6;color:#6B5240;margin-bottom:4px}
+.task-outcome{font-size:11px;font-style:italic;color:#9C8B78}
+.plan-reflection{font-size:12px;line-height:1.7;color:#9C8B78;margin-top:1.25rem;padding-top:1rem;border-top:0.5px solid #E8E0D0}
+.radar-wrap{margin-bottom:1.75rem;position:relative;height:280px}
 </style>
+</head>
+<body>
+<div id="app">
 
-<div id="app" role="main">
-  <h2 style="position:absolute;width:1px;height:1px;overflow:hidden;clip:rect(0,0,0,0)">AI Readiness Assessment for Creative Leaders</h2>
-
-  <div id="s-intro" class="screen active">
-    <div class="tag">AI Readiness Assessment</div>
-    <h1 class="hero">Where does your team <em>actually</em> stand?</h1>
-    <p class="lead">Sixty questions across five dimensions. About an hour. A clear picture of your AI maturity — with benchmarks, recommendations, and a personalised 30-day action plan.</p>
-    <div class="dims-grid">
-      <div class="dim-card"><div class="dn">Principles clarity</div><div class="dc">12 questions</div></div>
-      <div class="dim-card"><div class="dn">Tool fluency</div><div class="dc">12 questions</div></div>
-      <div class="dim-card"><div class="dn">Governance</div><div class="dc">12 questions</div></div>
-      <div class="dim-card"><div class="dn">Team alignment</div><div class="dc">12 questions</div></div>
-      <div class="dim-card"><div class="dn">Brand system health</div><div class="dc">12 questions</div></div>
-    </div>
-    <button class="btn-primary" onclick="startAssessment()">Begin assessment &#8594;</button>
+<div id="s-intro" class="screen active">
+  <div class="tag">AI Readiness Assessment</div>
+  <h1 class="hero">Where does your team <em>actually</em> stand?</h1>
+  <p class="lead">Sixty questions across five dimensions. About an hour. A clear picture of your AI maturity — with benchmarks, recommendations, and a personalised 30-day action plan.</p>
+  <div class="dims-grid">
+    <div class="dim-card"><div class="dn">Principles clarity</div><div class="dc">12 questions</div></div>
+    <div class="dim-card"><div class="dn">Tool fluency</div><div class="dc">12 questions</div></div>
+    <div class="dim-card"><div class="dn">Governance</div><div class="dc">12 questions</div></div>
+    <div class="dim-card"><div class="dn">Team alignment</div><div class="dc">12 questions</div></div>
+    <div class="dim-card"><div class="dn">Brand system health</div><div class="dc">12 questions</div></div>
   </div>
+  <button class="btn-primary" id="begin-btn">Begin assessment &#8594;</button>
+</div>
 
-  <div id="s-questions" class="screen">
-    <div class="prog-meta"><span id="dim-lbl"></span><span id="q-of"></span></div>
-    <div class="prog-outer"><div class="prog-inner" id="prog-bar" style="width:0%"></div></div>
-    <div class="dim-label"><div class="dim-dot" id="dim-dot"></div><span id="cur-dim"></span></div>
-    <div class="q-text" id="q-text"></div>
-    <div class="opts" id="opts"></div>
-    <div class="nav-row">
-      <button class="btn-ghost" id="btn-prev" onclick="prevQ()">&#8592; Back</button>
-      <span class="q-ctr" id="q-ctr"></span>
-      <button class="btn-primary" id="btn-next" onclick="nextQ()">Next &#8594;</button>
-    </div>
-  </div>
-
-  <div id="s-loading" class="screen">
-    <div class="loading-screen">
-      <div class="tag">Generating your report</div>
-      <h1 class="hero">Analysing your <em>responses</em></h1>
-      <div class="dots"><span></span><span></span><span></span></div>
-      <p class="lead" style="margin:0 auto;text-align:center" id="load-status">Scoring across five dimensions...</p>
-    </div>
-  </div>
-
-  <div id="s-report" class="screen">
-    <div class="rep-header">
-      <div class="tag">Your report</div>
-      <h1 class="hero" id="rep-headline"></h1>
-      <div id="mat-badge" style="margin-bottom:.75rem"></div>
-      <p class="lead" id="rep-intro"></p>
-    </div>
-
-    <div class="score-grid" id="score-grid"></div>
-
-    <div style="margin-bottom:1.75rem">
-      <div style="font-family:'Lora',serif;font-size:17px;font-weight:400;margin-bottom:.75rem">How you compare</div>
-      <div id="benchmarks"></div>
-    </div>
-
-    <div style="margin-bottom:1.75rem">
-      <div style="font-family:'Lora',serif;font-size:17px;font-weight:400;margin-bottom:.75rem">Prioritised recommendations</div>
-      <div id="recs"></div>
-    </div>
-
-    <div style="margin-bottom:1.75rem">
-      <div style="font-family:'Lora',serif;font-size:17px;font-weight:400;margin-bottom:.5rem">Companion library</div>
-      <p style="font-size:13px;color:var(--color-text-secondary);margin-bottom:1rem">Templates and frameworks matched to where you are now.</p>
-      <div class="lib-grid" id="lib-grid"></div>
-    </div>
-
-    <!-- 30-DAY ACTION PLANS -->
-    <div class="plan-section" id="plan-section">
-      <div class="tag">Your 30-day action plans</div>
-      <p class="lead" style="margin-top:.5rem" id="plan-intro-text"></p>
-      <div class="plan-tabs" id="plan-tabs"></div>
-      <div id="plan-contents"></div>
-    </div>
-
-    <div style="display:flex;gap:10px;flex-wrap:wrap;margin-top:1.75rem;padding-top:1.5rem;border-top:.5px solid var(--color-border-tertiary)">
-      <button class="btn-ghost" onclick="restartAssessment()">Start over</button>
-    </div>
+<div id="s-questions" class="screen">
+  <div class="prog-meta"><span id="dim-lbl"></span><span id="q-of"></span></div>
+  <div class="prog-outer"><div class="prog-inner" id="prog-bar" style="width:0%"></div></div>
+  <div class="dim-label"><div class="dim-dot" id="dim-dot"></div><span id="cur-dim"></span></div>
+  <div class="q-text" id="q-text"></div>
+  <div class="opts" id="opts"></div>
+  <div class="nav-row">
+    <button class="btn-ghost" id="btn-prev">&#8592; Back</button>
+    <span class="q-ctr" id="q-ctr"></span>
+    <button class="btn-primary" id="btn-next">Next &#8594;</button>
   </div>
 </div>
 
-<script src="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/4.4.1/chart.umd.js"></script>
+<div id="s-loading" class="screen">
+  <div class="loading-wrap">
+    <div class="tag">Generating your report</div>
+    <h1 class="hero">Analysing your <em>responses</em></h1>
+    <div class="dots"><span></span><span></span><span></span></div>
+    <p class="lead" style="margin:0 auto;text-align:center" id="load-status">Scoring across five dimensions...</p>
+  </div>
+</div>
+
+<div id="s-report" class="screen">
+  <div class="rep-header">
+    <div class="tag">Your report</div>
+    <h1 class="hero" id="rep-headline"></h1>
+    <div id="mat-badge" style="margin-bottom:.75rem"></div>
+    <p class="lead" id="rep-intro"></p>
+  </div>
+  <div class="score-grid" id="score-grid"></div>
+  <div style="margin-bottom:1.75rem">
+    <div class="section-title">Your profile</div>
+    <div class="radar-wrap"><canvas id="radar-canvas"></canvas></div>
+  </div>
+  <div style="margin-bottom:1.75rem">
+    <div class="section-title">How you compare</div>
+    <div id="benchmarks"></div>
+  </div>
+  <div style="margin-bottom:1.75rem">
+    <div class="section-title">Prioritised recommendations</div>
+    <div id="recs"></div>
+  </div>
+  <div style="margin-bottom:1.75rem">
+    <div class="section-title">Companion library</div>
+    <p style="font-size:13px;color:#9C8B78;margin-bottom:1rem">Templates and frameworks matched to where you are now.</p>
+    <div class="lib-grid" id="lib-grid"></div>
+  </div>
+  <div class="plan-section">
+    <div class="tag">Your 30-day action plans</div>
+    <p class="lead" style="margin-top:.5rem" id="plan-intro-text"></p>
+    <div class="plan-tabs" id="plan-tabs"></div>
+    <div id="plan-contents"></div>
+  </div>
+  <div style="margin-top:1.75rem;padding-top:1.5rem;border-top:0.5px solid #E8E0D0">
+    <button class="btn-ghost" id="restart-btn">Start over</button>
+  </div>
+</div>
+
+</div>
 <script>
-const DIMS=[
-  {key:'principles',name:'Principles clarity',color:'#8B6F47'},
-  {key:'fluency',   name:'Tool fluency',       color:'#5C7A5C'},
-  {key:'governance',name:'Governance',          color:'#B55A35'},
-  {key:'alignment', name:'Team alignment',      color:'#C4923A'},
-  {key:'brand',     name:'Brand system health', color:'#6B5240'},
+(function() {
+
+var API_KEY = 'https://brittnilm-ux.github.io/ai-readiness-assessment/';
+
+var DIMS = [
+  {key:'principles', name:'Principles clarity',  color:'#8B6F47'},
+  {key:'fluency',    name:'Tool fluency',          color:'#5C7A5C'},
+  {key:'governance', name:'Governance',             color:'#B55A35'},
+  {key:'alignment',  name:'Team alignment',         color:'#C4923A'},
+  {key:'brand',      name:'Brand system health',    color:'#6B5240'}
 ];
 
-const QS=[
-  {d:'principles',t:"Your team has a written statement of how AI should and shouldn't be used in your creative work.",o:["We don't have one and haven't discussed it","We've talked about it but nothing written down","We have informal guidelines a few people know","We have a documented policy shared with the team","We have a living document we revisit regularly"]},
-  {d:'principles',t:"When a new AI tool appears in your market, your first instinct is...",o:["Excitement — we want to try everything","Curiosity but also anxiety about what it means","We evaluate it against our existing principles","We have a structured intake process for new tools","We benchmark it against our values before any trial"]},
-  {d:'principles',t:"Your team can articulate a clear point of view on AI-generated vs. human-made creative work.",o:["We haven't formed a view yet","It's a source of ongoing debate internally","We have loose consensus but nothing explicit","We have a stated position we share with clients","It's core to our creative philosophy and brand"]},
-  {d:'principles',t:"When a client asks 'do you use AI in your work?', your team gives...",o:["Inconsistent answers depending on who you ask","A vague, non-committal answer","An honest but improvised answer","A consistent rehearsed answer","A confident, values-grounded answer we're proud of"]},
-  {d:'principles',t:"You have defined which parts of your creative process AI is allowed to touch.",o:["Not at all","Loosely — we know what feels wrong","We have informal boundaries","We have clear categories (off limits, supported, led)","We have a map with regular review cycles"]},
-  {d:'principles',t:"Your leadership team has had a serious, structured conversation about AI ethics in your practice.",o:["Not yet","Brief conversations, nothing deep","One or two focused discussions","Regular discussions with documented takeaways","It's part of our leadership rhythm and culture"]},
-  {d:'principles',t:"You know how your clients feel about AI being used in work you deliver to them.",o:["We've never asked","We've sensed some feelings but never formally asked","We've asked informally","We've surveyed or interviewed clients on this","We have clear, documented client-by-client positions"]},
-  {d:'principles',t:"Your team's creative values are documented in a way that can inform AI decisions.",o:["Our values aren't documented","They exist but they're abstract","We have a values statement","Values are tied to specific practice decisions","Values actively inform our AI policies and tool choices"]},
-  {d:'principles',t:"You have thought through intellectual property implications of AI use in your deliverables.",o:["Haven't thought about it","Aware it's an issue, no formal thinking","Informally discussed","Reviewed with legal or counsel","Clear policies tied to our contracts"]},
-  {d:'principles',t:"You are confident your team's AI principles will still feel right in two years.",o:["We don't have principles to evaluate","Uncertain — things are moving too fast","Somewhat confident","Fairly confident, we built in flexibility","Very confident — they're values-based not tool-based"]},
-  {d:'principles',t:"When you make a decision NOT to use AI for something, you can explain why.",o:["We make those decisions intuitively","There's a sense but we couldn't always articulate it","Most of us could give a rough reason","We can point to a principle or policy","We document and share reasoning consistently"]},
-  {d:'principles',t:"Clients, partners, and your team would describe your AI stance as...",o:["Unknown / unclear","Cautious or resistant","Pragmatic but uncommitted","Thoughtful and principled","Distinctive — it's part of our identity"]},
-  {d:'fluency',t:"Your creative team has hands-on experience with generative AI tools (image, copy, video, etc.).",o:["Nobody on the team has tried them","A few curious individuals have experimented","Many have tried them casually","Most can use core tools for basic tasks","The team uses AI tools fluently across disciplines"]},
-  {d:'fluency',t:"You have a shared language for talking about AI tools across your team.",o:["We don't — everyone has their own vocabulary","Some shared terms but lots of confusion","Basic shared vocabulary","Consistent terminology across the team","Rich shared language that includes nuance and critique"]},
-  {d:'fluency',t:"When a new AI tool launches, your team can evaluate it independently.",o:["We'd need a lot of outside help","One or two people could figure it out","Several people can run an evaluation","We have a standard evaluation checklist","We have a structured process led by dedicated people"]},
-  {d:'fluency',t:"Your team understands the difference between prompting and creative direction.",o:["These feel the same to us","We've started thinking about it","Some people have a clear mental model","Most of the team can articulate the difference","It's a core part of how we think about creative work"]},
-  {d:'fluency',t:"Your most senior creatives are as fluent in AI tools as your most junior.",o:["Leadership hasn't engaged at all","Leadership awareness is low","Mixed — some senior fluency, some resistance","Leaders are engaged and learning","Leadership models fluency and shapes the culture"]},
-  {d:'fluency',t:"Your team can identify when AI output needs significant human refinement.",o:["Not really — we take outputs at face value","Sometimes, in obvious cases","Usually, but we miss subtle issues","Consistently across most output types","Every team member applies rigorous editorial judgment"]},
-  {d:'fluency',t:"You regularly set aside time for team AI learning and experimentation.",o:["No dedicated time","Informal self-directed only","Occasional sessions, not structured","Regular structured time (monthly or more)","Continuous learning is embedded in how we work"]},
-  {d:'fluency',t:"Your team knows which AI tools are best suited to which creative tasks.",o:["We use whatever is popular","We have rough preferences","We have opinions, not always consistent","We have a clear tool-to-task map","We continuously update our tool-to-task framework"]},
-  {d:'fluency',t:"Your team can reliably get high-quality outputs from AI with good creative direction.",o:["Outputs are generally poor quality","Outputs are mediocre and variable","Outputs are sometimes useful","Outputs are reliably good with skilled direction","Outputs often exceed expectations with expert direction"]},
-  {d:'fluency',t:"You could upskill a new hire in your AI practices within their first 30 days.",o:["We don't have documented practices","They'd have to figure it out on their own","We'd share some resources informally","We have a basic onboarding around AI","We have a structured AI onboarding program"]},
-  {d:'fluency',t:"When an AI tool produces something unexpected, your team knows how to troubleshoot it.",o:["We give up or try random things","One person usually figures it out","Several people can troubleshoot","Most of the team has troubleshooting strategies","We have documented approaches to common failure modes"]},
-  {d:'governance',t:"You have a formal or informal approval process for AI-assisted work before it ships.",o:["No review process at all","An implicit check by senior creatives","Informal review — depends who's around","A consistent review checklist","A formal staged review with accountability"]},
-  {d:'governance',t:"Your contracts and client agreements address AI use.",o:["They don't mention AI","They have vague language we copied from a template","We've added basic AI clauses","Our AI language was reviewed and is clear","AI terms are a regular negotiation point we handle confidently"]},
-  {d:'governance',t:"You track which AI tools are being used by your team and for what.",o:["No tracking at all","We're aware anecdotally","Someone has a rough list","We maintain a tool register","We have a full audit trail tied to projects"]},
-  {d:'governance',t:"Your team has a clear protocol for what to do when AI outputs something problematic.",o:["No protocol — we'd improvise","Instinct-based response","Someone senior would handle it","Basic escalation path exists","Clear documented response protocol with owner"]},
-  {d:'governance',t:"Data security and privacy considerations are part of your AI tool selection process.",o:["We haven't considered this","Vague awareness but no process","We check informally","Security is a standard part of tool evaluation","We have formal data governance tied to AI tool use"]},
-  {d:'governance',t:"Leadership is actively responsible for AI governance, not just delegation.",o:["Not a leadership concern currently","Leadership has heard about it","One leader is paying attention","Leadership team shares governance responsibility","AI governance is a leadership priority with clear owner"]},
-  {d:'governance',t:"Your team knows what to disclose to clients about AI involvement in their work.",o:["No clarity on disclosure","We disclose when directly asked","We disclose selectively based on feel","We have a disclosure standard","Our disclosure practice is proactive and transparent"]},
-  {d:'governance',t:"You have thought through the risk of over-reliance on specific AI tools or vendors.",o:["Not at all","Mentioned as a risk","Discussed but no mitigation","We have basic vendor diversity in mind","We actively manage AI vendor concentration risk"]},
-  {d:'governance',t:"There is a clear owner of AI governance in your organization.",o:["No owner","Implicitly me","Someone junior has taken informal ownership","Designated but under-resourced","Clear owner with mandate, time, and accountability"]},
-  {d:'governance',t:"You regularly review and update your AI governance practices.",o:["No review cadence","When something goes wrong","Annually at best","Quarterly review","Ongoing — tied to industry and tool changes"]},
-  {d:'governance',t:"Your AI practices would hold up to scrutiny from a client audit.",o:["Almost certainly not","Probably not","We'd muddle through","Mostly yes","Yes, confidently"]},
-  {d:'governance',t:"You have addressed how AI use interacts with your existing quality standards.",o:["Not yet","Loosely aware of tension","We apply existing standards informally","AI work goes through our standard QA","QA frameworks have been updated for AI-assisted work"]},
-  {d:'alignment',t:"Your team has a shared understanding of why your organization is (or isn't) adopting AI.",o:["No shared understanding","Vague shared sense","Broad alignment without depth","Most people understand the reasoning","Clear, internalized understanding across the team"]},
-  {d:'alignment',t:"Creative leaders and operational/business leaders are aligned on your AI strategy.",o:["Active tension between these groups","They coexist but aren't aligned","Loose informal alignment","Regular syncs happen","Shared strategy developed together"]},
-  {d:'alignment',t:"Your team members know what they're expected to do — and not do — with AI.",o:["No expectations set","Expectations are implied not stated","Some have clarity, others don't","Written expectations exist but aren't widely known","Clear expectations that everyone can recall and follow"]},
-  {d:'alignment',t:"There is psychological safety on your team to raise concerns about AI use.",o:["People keep concerns to themselves","Concerns come out sideways or as resistance","Some people feel safe, others don't","Most feel comfortable raising issues","Open culture — concerns surface and are addressed"]},
-  {d:'alignment',t:"The people most affected by AI in their work had input into your AI strategy.",o:["Not at all","Leadership decided and informed","Some input was sought","A proper consultation happened","Co-created with the team"]},
-  {d:'alignment',t:"Your team can distinguish between productive AI skepticism and unproductive resistance.",o:["We see all skepticism as resistance","We're not sure how to think about this","Informally — culture depends on who's asking","This distinction is named and valued","We actively cultivate and value informed skepticism"]},
-  {d:'alignment',t:"When someone experiments with AI in an unexpected way, the response from leadership is...",o:["Skepticism or concern","Tolerance","Curiosity","Encouragement","Structured support to learn and share"]},
-  {d:'alignment',t:"Your team talks about AI in terms of the work, not just the tools.",o:["Conversations are mostly tool-focused","Mix of both","Mostly work-focused","Almost always tied to creative and strategic intent","AI is invisible — it's just part of how we work"]},
-  {d:'alignment',t:"New team members understand your organization's AI culture quickly.",o:["Culture doesn't exist to understand","They pick it up slowly by osmosis","A few conversations cover it","It's part of onboarding","Our AI culture is vivid and transmissible"]},
-  {d:'alignment',t:"When AI creates workflow disruption, your team navigates it constructively.",o:["It creates significant conflict","It causes friction that slows us down","We get through it but it's hard","We handle it reasonably well","We treat disruption as a learning signal"]},
-  {d:'alignment',t:"Client-facing and internal team members share the same AI philosophy.",o:["Very different orientations","Aware of the gap, not addressed","Partial alignment","Mostly aligned","Fully aligned — one voice externally and internally"]},
-  {d:'alignment',t:"Your team's feelings about AI are a known, acknowledged factor in how you lead.",o:["Not something we talk about","Acknowledged informally","Comes up in 1:1s but not collectively","Openly discussed at a team level","Feelings are part of our AI strategy and change management"]},
-  {d:'brand',t:"Your brand system has been evaluated for how AI might affect its integrity.",o:["Not at all","We've had the worry, not the analysis","High-level assessment only","Formal evaluation happened","Ongoing monitoring tied to our brand governance"]},
-  {d:'brand',t:"Your visual identity system is documented in a way that can guide AI image generation.",o:["No documentation that would help","Some guidelines but not AI-relevant","Guidelines could partially guide AI use","Guidelines include AI-specific direction","We have prompting guides tied to our brand system"]},
-  {d:'brand',t:"Your brand voice is defined well enough that AI can approximate it.",o:["Brand voice isn't documented","High-level adjectives only","Some examples and principles","Rich guide with do/don't examples","Living guide with AI-tested prompts"]},
-  {d:'brand',t:"You have tested whether AI tools reproduce your brand accurately.",o:["Never tested","Tried once informally","Some team members have tested","Structured testing has happened","Ongoing brand integrity testing is in place"]},
-  {d:'brand',t:"When AI produces off-brand work, your team can articulate exactly why.",o:["Not really — it just feels wrong","Some people can explain it","Most can give a rough reason","Clear vocabulary for brand deviation","Brand standards are precise enough for structured critique"]},
-  {d:'brand',t:"Your brand assets are organized in a way that makes AI-assisted work efficient.",o:["Asset management is fragmented","Basic organization exists","Assets are findable but not AI-optimized","Assets are tagged and structured for use","Fully integrated asset system supports AI workflows"]},
-  {d:'brand',t:"Client brands you steward have been evaluated with the same rigor as your own.",o:["We haven't applied this to client work","Some clients have received basic guidance","We apply our standards informally to clients","Client brand governance includes AI considerations","AI brand governance is part of our client service offer"]},
-  {d:'brand',t:"You know which elements of your brand are most at risk from AI homogenisation.",o:["Not something we've identified","Vague concerns about 'genericness'","We've identified some risk areas","We've mapped risk areas specifically","Risk map informs our brand protection priorities"]},
-  {d:'brand',t:"Your team has explored how AI could strengthen — not just threaten — your brand system.",o:["Only thought about threats","Mostly threat-focused","Starting to think about opportunities","Balanced view of threats and opportunities","AI is a deliberate part of our brand evolution strategy"]},
-  {d:'brand',t:"You are confident your brand would be recognisable even if heavily AI-assisted.",o:["Not confident at all","Worried it would get generic","Somewhat confident","Fairly confident with good direction","Very confident — brand strength is independent of production method"]},
-  {d:'brand',t:"Your brand guidelines are updated as you learn more about AI's effects on visual culture.",o:["Guidelines aren't updated for AI at all","Updated reactively when something breaks","Annual review includes AI","Regular review cycle","Continuous update tied to culture monitoring"]},
-  {d:'brand',t:"A senior creative could conduct a meaningful AI brand audit today.",o:["No — we don't have the framework","Maybe — they'd improvise","Possibly — with some prep","Yes — we have audit criteria","Yes — we have a documented audit process"]},
+var PEERS = [55,48,42,51,44];
+
+var MATURITY = [
+  {min:0,  max:24, label:'Exploring',   color:'#B55A35', desc:'You are at the beginning of a meaningful journey. The foundations are not in place yet, but awareness is growing and this is exactly the right time to build intentionally.'},
+  {min:25, max:49, label:'Emerging',    color:'#C4923A', desc:'You have real momentum. Individual pieces are in place, but they are not yet connected into a coherent system. Your highest leverage right now is integration and alignment.'},
+  {min:50, max:74, label:'Established', color:'#5C7A5C', desc:'Your team has built solid AI practices. You are past the reactive phase. The work now is deepening quality and becoming more deliberate about where you want to lead.'},
+  {min:75, max:100,label:'Leading',     color:'#8B6F47', desc:'You are ahead of most creative organisations. Your practices are intentional, your team is aligned, and you have the infrastructure to adapt as things evolve.'}
 ];
 
-const MATURITY=[
-  {min:0, max:24,label:'Exploring',  color:'#B55A35',desc:"You're at the beginning of a meaningful journey. The foundations aren't in place yet — but awareness is growing and this is exactly the right time to build intentionally."},
-  {min:25,max:49,label:'Emerging',   color:'#C4923A',desc:"You have real momentum. Individual pieces are in place, but they're not yet connected into a coherent system. Your highest leverage right now is integration and alignment."},
-  {min:50,max:74,label:'Established',color:'#5C7A5C',desc:"Your team has built solid AI practices. You're past the reactive phase. The work now is deepening quality and becoming more deliberate about where you want to lead."},
-  {min:75,max:100,label:'Leading',   color:'#8B6F47',desc:"You're ahead of most creative organisations. Your practices are intentional, your team is aligned, and you have the infrastructure to adapt as things evolve."},
+var LIB = [
+  {n:'AI Principles Canvas',      d:"A one-page framework to define your team's non-negotiables."},
+  {n:'Tool Evaluation Scorecard', d:'Structured criteria to assess any new AI tool in 20 minutes.'},
+  {n:'Governance Starter Pack',   d:'Three templates: policy, disclosure, and incident response.'},
+  {n:'Brand Prompting Guide',     d:'How to translate your brand system into AI-ready language.'},
+  {n:'Team Alignment Workshop',   d:'A 90-minute facilitation guide for getting everyone on the same page.'},
+  {n:'Maturity Roadmap Template', d:'A quarter-by-quarter planning framework for AI integration.'}
 ];
 
-const PEERS=[55,48,42,51,44];
-const LIB=[
-  {n:'AI Principles Canvas',d:"A one-page framework to define your team's non-negotiables."},
-  {n:'Tool Evaluation Scorecard',d:"Structured criteria to assess any new AI tool in 20 minutes."},
-  {n:'Governance Starter Pack',d:"Three templates: policy, disclosure, and incident response."},
-  {n:'Brand Prompting Guide',d:"How to translate your brand system into AI-ready language."},
-  {n:'Team Alignment Workshop',d:"A 90-minute facilitation guide for getting everyone on the same page."},
-  {n:'Maturity Roadmap Template',d:"A quarter-by-quarter planning framework for AI integration."},
+var QS = [
+  {d:'principles',t:'Your team has a written statement of how AI should and should not be used in your creative work.',o:['We do not have one and have not discussed it','We have talked about it but nothing written down','We have informal guidelines a few people know','We have a documented policy shared with the team','We have a living document we revisit regularly']},
+  {d:'principles',t:'When a new AI tool appears in your market, your first instinct is...',o:['Excitement — we want to try everything','Curiosity but also anxiety about what it means','We evaluate it against our existing principles','We have a structured intake process for new tools','We benchmark it against our values before any trial']},
+  {d:'principles',t:'Your team can articulate a clear point of view on AI-generated versus human-made creative work.',o:['We have not formed a view yet','It is a source of ongoing debate internally','We have loose consensus but nothing explicit','We have a stated position we share with clients','It is core to our creative philosophy and brand']},
+  {d:'principles',t:'When a client asks whether you use AI in your work, your team gives...',o:['Inconsistent answers depending on who you ask','A vague, non-committal answer','An honest but improvised answer','A consistent rehearsed answer','A confident, values-grounded answer we are proud of']},
+  {d:'principles',t:'You have defined which parts of your creative process AI is allowed to touch.',o:['Not at all','Loosely — we know what feels wrong','We have informal boundaries','We have clear categories: off limits, supported, led','We have a map with regular review cycles']},
+  {d:'principles',t:'Your leadership team has had a serious, structured conversation about AI ethics in your practice.',o:['Not yet','Brief conversations, nothing deep','One or two focused discussions','Regular discussions with documented takeaways','It is part of our leadership rhythm and culture']},
+  {d:'principles',t:'You know how your clients feel about AI being used in work you deliver to them.',o:['We have never asked','We have sensed some feelings but never formally asked','We have asked informally','We have surveyed or interviewed clients on this','We have clear, documented client-by-client positions']},
+  {d:'principles',t:'Your creative values are documented in a way that can inform AI decisions.',o:['Our values are not documented','They exist but they are abstract','We have a values statement','Values are tied to specific practice decisions','Values actively inform our AI policies and tool choices']},
+  {d:'principles',t:'You have thought through intellectual property implications of AI use in your deliverables.',o:['Have not thought about it','Aware it is an issue, no formal thinking','Informally discussed','Reviewed with legal or counsel','Clear policies tied to our contracts']},
+  {d:'principles',t:'You are confident your AI principles will still feel right in two years.',o:['We do not have principles to evaluate','Uncertain — things are moving too fast','Somewhat confident','Fairly confident, we built in flexibility','Very confident — they are values-based not tool-based']},
+  {d:'principles',t:'When you decide NOT to use AI for something, you can explain why.',o:['We make those decisions intuitively','There is a sense but we could not always articulate it','Most of us could give a rough reason','We can point to a principle or policy','We document and share reasoning consistently']},
+  {d:'principles',t:'Clients, partners, and your team would describe your AI stance as...',o:['Unknown or unclear','Cautious or resistant','Pragmatic but uncommitted','Thoughtful and principled','Distinctive — it is part of our identity']},
+  {d:'fluency',t:'Your creative team has hands-on experience with generative AI tools (image, copy, video, etc.).',o:['Nobody on the team has tried them','A few curious individuals have experimented','Many have tried them casually','Most can use core tools for basic tasks','The team uses AI tools fluently across disciplines']},
+  {d:'fluency',t:'You have a shared language for talking about AI tools across your team.',o:['We do not — everyone has their own vocabulary','Some shared terms but lots of confusion','Basic shared vocabulary','Consistent terminology across the team','Rich shared language that includes nuance and critique']},
+  {d:'fluency',t:'When a new AI tool launches, your team can evaluate it independently.',o:['We would need a lot of outside help','One or two people could figure it out','Several people can run an evaluation','We have a standard evaluation checklist','We have a structured process led by dedicated people']},
+  {d:'fluency',t:'Your team understands the difference between prompting and creative direction.',o:['These feel the same to us','We have started thinking about it','Some people have a clear mental model','Most of the team can articulate the difference','It is a core part of how we think about creative work']},
+  {d:'fluency',t:'Your most senior creatives are as fluent in AI tools as your most junior.',o:['Leadership has not engaged at all','Leadership awareness is low','Mixed — some senior fluency, some resistance','Leaders are engaged and learning','Leadership models fluency and shapes the culture']},
+  {d:'fluency',t:'Your team can identify when AI output needs significant human refinement.',o:['Not really — we take outputs at face value','Sometimes, in obvious cases','Usually, but we miss subtle issues','Consistently across most output types','Every team member applies rigorous editorial judgment']},
+  {d:'fluency',t:'You regularly set aside time for team AI learning and experimentation.',o:['No dedicated time','Informal self-directed only','Occasional sessions, not structured','Regular structured time (monthly or more)','Continuous learning is embedded in how we work']},
+  {d:'fluency',t:'Your team knows which AI tools are best suited to which creative tasks.',o:['We use whatever is popular','We have rough preferences','We have opinions, not always consistent','We have a clear tool-to-task map','We continuously update our tool-to-task framework']},
+  {d:'fluency',t:'Your team can reliably get high-quality outputs from AI with good creative direction.',o:['Outputs are generally poor quality','Outputs are mediocre and variable','Outputs are sometimes useful','Outputs are reliably good with skilled direction','Outputs often exceed expectations with expert direction']},
+  {d:'fluency',t:'You could upskill a new hire in your AI practices within their first 30 days.',o:['We do not have documented practices','They would have to figure it out on their own','We would share some resources informally','We have a basic onboarding around AI','We have a structured AI onboarding program']},
+  {d:'fluency',t:'When an AI tool produces something unexpected, your team knows how to troubleshoot it.',o:['We give up or try random things','One person usually figures it out','Several people can troubleshoot','Most of the team has troubleshooting strategies','We have documented approaches to common failure modes']},
+  {d:'governance',t:'You have a formal or informal approval process for AI-assisted work before it ships.',o:['No review process at all','An implicit check by senior creatives','Informal review — depends who is around','A consistent review checklist','A formal staged review with accountability']},
+  {d:'governance',t:'Your contracts and client agreements address AI use.',o:['They do not mention AI','They have vague language we copied from a template','We have added basic AI clauses','Our AI language was reviewed and is clear','AI terms are a regular negotiation point we handle confidently']},
+  {d:'governance',t:'You track which AI tools are being used by your team and for what.',o:['No tracking at all','We are aware anecdotally','Someone has a rough list','We maintain a tool register','We have a full audit trail tied to projects']},
+  {d:'governance',t:'Your team has a clear protocol for what to do when AI outputs something problematic.',o:['No protocol — we would improvise','Instinct-based response','Someone senior would handle it','Basic escalation path exists','Clear documented response protocol with owner']},
+  {d:'governance',t:'Data security and privacy considerations are part of your AI tool selection process.',o:['We have not considered this','Vague awareness but no process','We check informally','Security is a standard part of tool evaluation','We have formal data governance tied to AI tool use']},
+  {d:'governance',t:'Leadership is actively responsible for AI governance, not just delegation.',o:['Not a leadership concern currently','Leadership has heard about it','One leader is paying attention','Leadership team shares governance responsibility','AI governance is a leadership priority with clear owner']},
+  {d:'governance',t:'Your team knows what to disclose to clients about AI involvement in their work.',o:['No clarity on disclosure','We disclose when directly asked','We disclose selectively based on feel','We have a disclosure standard','Our disclosure practice is proactive and transparent']},
+  {d:'governance',t:'You have thought through the risk of over-reliance on specific AI tools or vendors.',o:['Not at all','Mentioned as a risk','Discussed but no mitigation','We have basic vendor diversity in mind','We actively manage AI vendor concentration risk']},
+  {d:'governance',t:'There is a clear owner of AI governance in your organisation.',o:['No owner','Implicitly me','Someone junior has taken informal ownership','Designated but under-resourced','Clear owner with mandate, time, and accountability']},
+  {d:'governance',t:'You regularly review and update your AI governance practices.',o:['No review cadence','When something goes wrong','Annually at best','Quarterly review','Ongoing — tied to industry and tool changes']},
+  {d:'governance',t:'Your AI practices would hold up to scrutiny from a client audit.',o:['Almost certainly not','Probably not','We would muddle through','Mostly yes','Yes, confidently']},
+  {d:'governance',t:'You have addressed how AI use interacts with your existing quality standards.',o:['Not yet','Loosely aware of tension','We apply existing standards informally','AI work goes through our standard QA','QA frameworks have been updated for AI-assisted work']},
+  {d:'alignment',t:'Your team has a shared understanding of why your organisation is adopting AI.',o:['No shared understanding','Vague shared sense','Broad alignment without depth','Most people understand the reasoning','Clear, internalised understanding across the team']},
+  {d:'alignment',t:'Creative leaders and operational leaders are aligned on your AI strategy.',o:['Active tension between these groups','They coexist but are not aligned','Loose informal alignment','Regular syncs happen','Shared strategy developed together']},
+  {d:'alignment',t:'Your team members know what they are expected to do — and not do — with AI.',o:['No expectations set','Expectations are implied not stated','Some have clarity, others do not','Written expectations exist but are not widely known','Clear expectations that everyone can recall and follow']},
+  {d:'alignment',t:'There is psychological safety on your team to raise concerns about AI use.',o:['People keep concerns to themselves','Concerns come out sideways or as resistance','Some people feel safe, others do not','Most feel comfortable raising issues','Open culture — concerns surface and are addressed']},
+  {d:'alignment',t:'The people most affected by AI in their work had input into your AI strategy.',o:['Not at all','Leadership decided and informed','Some input was sought','A proper consultation happened','Co-created with the team']},
+  {d:'alignment',t:'Your team can distinguish between productive AI scepticism and unproductive resistance.',o:['We see all scepticism as resistance','We are not sure how to think about this','Informally — culture depends on who is asking','This distinction is named and valued','We actively cultivate and value informed scepticism']},
+  {d:'alignment',t:'When someone experiments with AI in an unexpected way, the response from leadership is...',o:['Scepticism or concern','Tolerance','Curiosity','Encouragement','Structured support to learn and share']},
+  {d:'alignment',t:'Your team talks about AI in terms of the work, not just the tools.',o:['Conversations are mostly tool-focused','Mix of both','Mostly work-focused','Almost always tied to creative and strategic intent','AI is invisible — it is just part of how we work']},
+  {d:'alignment',t:'New team members understand your AI culture quickly.',o:['Culture does not exist to understand','They pick it up slowly by osmosis','A few conversations cover it','It is part of onboarding','Our AI culture is vivid and transmissible']},
+  {d:'alignment',t:'When AI creates workflow disruption, your team navigates it constructively.',o:['It creates significant conflict','It causes friction that slows us down','We get through it but it is hard','We handle it reasonably well','We treat disruption as a learning signal']},
+  {d:'alignment',t:'Client-facing and internal team members share the same AI philosophy.',o:['Very different orientations','Aware of the gap, not addressed','Partial alignment','Mostly aligned','Fully aligned — one voice externally and internally']},
+  {d:'alignment',t:'Your team\'s feelings about AI are a known, acknowledged factor in how you lead.',o:['Not something we talk about','Acknowledged informally','Comes up in one-to-ones but not collectively','Openly discussed at a team level','Feelings are part of our AI strategy and change management']},
+  {d:'brand',t:'Your brand system has been evaluated for how AI might affect its integrity.',o:['Not at all','We have had the worry, not the analysis','High-level assessment only','Formal evaluation happened','Ongoing monitoring tied to our brand governance']},
+  {d:'brand',t:'Your visual identity system is documented in a way that can guide AI image generation.',o:['No documentation that would help','Some guidelines but not AI-relevant','Guidelines could partially guide AI use','Guidelines include AI-specific direction','We have prompting guides tied to our brand system']},
+  {d:'brand',t:'Your brand voice is defined well enough that AI can approximate it.',o:['Brand voice is not documented','High-level adjectives only','Some examples and principles','Rich guide with do and do-not examples','Living guide with AI-tested prompts']},
+  {d:'brand',t:'You have tested whether AI tools reproduce your brand accurately.',o:['Never tested','Tried once informally','Some team members have tested','Structured testing has happened','Ongoing brand integrity testing is in place']},
+  {d:'brand',t:'When AI produces off-brand work, your team can articulate exactly why.',o:['Not really — it just feels wrong','Some people can explain it','Most can give a rough reason','Clear vocabulary for brand deviation','Brand standards are precise enough for structured critique']},
+  {d:'brand',t:'Your brand assets are organised in a way that makes AI-assisted work efficient.',o:['Asset management is fragmented','Basic organisation exists','Assets are findable but not AI-optimised','Assets are tagged and structured for use','Fully integrated asset system supports AI workflows']},
+  {d:'brand',t:'Client brands you steward have been evaluated with the same rigour as your own.',o:['We have not applied this to client work','Some clients have received basic guidance','We apply our standards informally to clients','Client brand governance includes AI considerations','AI brand governance is part of our client service offer']},
+  {d:'brand',t:'You know which elements of your brand are most at risk from AI homogenisation.',o:['Not something we have identified','Vague concerns about genericness','We have identified some risk areas','We have mapped risk areas specifically','Risk map informs our brand protection priorities']},
+  {d:'brand',t:'Your team has explored how AI could strengthen — not just threaten — your brand system.',o:['Only thought about threats','Mostly threat-focused','Starting to think about opportunities','Balanced view of threats and opportunities','AI is a deliberate part of our brand evolution strategy']},
+  {d:'brand',t:'You are confident your brand would be recognisable even if heavily AI-assisted.',o:['Not confident at all','Worried it would get generic','Somewhat confident','Fairly confident with good direction','Very confident — brand strength is independent of production method']},
+  {d:'brand',t:'Your brand guidelines are updated as you learn more about AI\'s effects on visual culture.',o:['Guidelines are not updated for AI at all','Updated reactively when something breaks','Annual review includes AI','Regular review cycle','Continuous update tied to culture monitoring']},
+  {d:'brand',t:'A senior creative could conduct a meaningful AI brand audit today.',o:['No — we do not have the framework','Maybe — they would improvise','Possibly — with some prep','Yes — we have audit criteria','Yes — we have a documented audit process']}
 ];
 
-const PLANS={
-  exploring:{label:'Exploring',color:'#B55A35',
-    intro:"You're at the beginning. This plan helps you build the right foundations before moving fast.",
-    weeks:[
-      {label:'Week 1',theme:'Get honest about where you are',tasks:[
-        {day:'Days 1–2',title:'Run a team inventory',desc:"Ask every team member to list the AI tools they've tried, even personally. No judgment — just data.",outcome:'A shared doc with current AI touchpoints across the team.'},
-        {day:'Days 3–4',title:'Hold a values conversation',desc:"Facilitate a 60-minute session: What do we make? What makes it ours? Where does craft live? What would feel like a compromise? Don't resolve it — just surface it.",outcome:'Documented tensions and values that will anchor your principles.'},
-        {day:'Day 5',title:'Designate an AI point person',desc:"This doesn't need to be a new role. Someone who will hold the thread for the next 30 days. Give them real time, not just a title.",outcome:'One named person with a clear 30-day remit.'},
-      ]},
-      {label:'Week 2',theme:'Define your principles (rough draft)',tasks:[
-        {day:'Days 6–8',title:'Draft your first AI principles',desc:"Use a simple framework: what AI is for, what it's not for, and what requires human sign-off. Keep it to one page. Don't aim for perfect.",outcome:'A draft principles statement your team can react to.'},
-        {day:'Days 9–10',title:'Get team reactions',desc:"Share the draft. Ask: Does this feel true? What's missing? What would make you uncomfortable? Revise based on what you hear.",outcome:'A revised draft with team input incorporated.'},
-      ]},
-      {label:'Week 3',theme:'Pick one tool and go deep',tasks:[
-        {day:'Days 11–14',title:'Choose one AI tool to explore together',desc:"Pick one tool relevant to your core work. Run a structured experiment: give the same brief to the tool and to a human. Compare results as a team.",outcome:"A shared understanding of one tool's capabilities and limits."},
-        {day:'Days 15–17',title:'Document what you learn',desc:"Capture: what worked, what surprised you, what felt wrong, what you'd need to change to use this well.",outcome:'Your first tool evaluation — a template for future tools.'},
-      ]},
-      {label:'Week 4',theme:'Set up for the next stage',tasks:[
-        {day:'Days 18–24',title:'Draft a one-page AI policy',desc:"Combine your principles and tool learning into a simple policy: what we do, what we don't, who decides.",outcome:"A one-page policy you're not embarrassed to share."},
-        {day:'Days 25–28',title:'Schedule your first governance check-in',desc:"Book a 45-minute monthly AI review. The discipline of regular review is the whole point.",outcome:'A recurring meeting on the calendar.'},
-        {day:'Days 29–30',title:'Celebrate and name what changed',desc:"Acknowledge what your team built this month. Name the shift from 'AI is happening to us' to 'we have a point of view.'",outcome:'A team moment that marks the transition to Emerging.'},
-      ]},
-    ],
-    reflection:"At the end of 30 days you should have: a drafted principles statement, your first tool evaluation, a simple AI policy, and a recurring governance cadence. You won't be done — but you'll have a foundation."
-  },
-  emerging:{label:'Emerging',color:'#C4923A',
-    intro:"You have momentum. This plan helps you connect the pieces into a coherent system.",
-    weeks:[
-      {label:'Week 1',theme:'Audit what you actually have',tasks:[
-        {day:'Days 1–2',title:'Map current AI activity',desc:"Document every place AI is touching your work: tools used, by whom, for what. Build a full picture before building further.",outcome:'A complete map of current AI activity across your team.'},
-        {day:'Days 3–4',title:'Identify your gaps and overlaps',desc:"Where are people doing the same thing independently? Where are there no practices at all? Where are your biggest inconsistencies?",outcome:'A gap analysis with three priority areas.'},
-        {day:'Day 5',title:'Choose your integration focus',desc:"Pick the one dimension where integration would have the most impact right now.",outcome:'A clear focus area for the next 25 days.'},
-      ]},
-      {label:'Week 2',theme:'Align the team',tasks:[
-        {day:'Days 6–8',title:'Run a cross-team alignment session',desc:"Bring together creatives, leaders, and ops. Share the gap analysis. Ask: what's working, what's frustrating, what do we need to agree on?",outcome:'A shared understanding of where you're misaligned and why.'},
-        {day:'Days 9–10',title:'Document three shared agreements',desc:"Pull three concrete agreements: things everyone will do, won't do, or will decide together. Write them down.",outcome:'Three written, shared agreements that reflect actual consensus.'},
-      ]},
-      {label:'Week 3',theme:'Systematise one practice',tasks:[
-        {day:'Days 11–15',title:'Build one repeatable practice',desc:"Take your integration focus area and build a simple, repeatable process: a checklist, a template, a decision framework.",outcome:'One documented practice your team will use consistently.'},
-        {day:'Days 16–17',title:'Test it with a real project',desc:"Apply your new practice to something live. Note what breaks, what's missing. Revise immediately.",outcome:'A tested, revised practice — not a theory.'},
-      ]},
-      {label:'Week 4',theme:'Scale and communicate',tasks:[
-        {day:'Days 18–24',title:'Communicate the shift internally',desc:"Write a brief internal memo: here's what we've been building, here's what changed, here's what's expected of everyone.",outcome:'An internal communication that makes the work visible.'},
-        {day:'Days 25–28',title:'Brief a trusted external partner',desc:"Share your current AI approach with one client or collaborator. Their questions will show you where your thinking has gaps.",outcome:'External validation and a sharpened external narrative.'},
-        {day:'Days 29–30',title:'Set 90-day goals',desc:"Define three specific outcomes for the next quarter: one for your practices, one for fluency, one for governance.",outcome:"A 90-day plan that builds on this month's work."},
-      ]},
-    ],
-    reflection:"Emerging to Established is about consistency. The measure of success is whether a new person joining your team would quickly understand your AI culture."
-  },
-  established:{label:'Established',color:'#5C7A5C',
-    intro:"Your foundations are solid. This plan helps you deepen quality and move from reactive to deliberate.",
-    weeks:[
-      {label:'Week 1',theme:'Stress-test what you've built',tasks:[
-        {day:'Days 1–3',title:'Conduct an internal AI audit',desc:"Review your practices against your stated principles. Where are the gaps? Where has practice drifted from intention?",outcome:'An honest audit with three findings you'll act on.'},
-        {day:'Days 4–5',title:'Interview your team',desc:"Ask five people: What's working? What frustrates you? What are we not talking about? Listen without defending.",outcome:"Five interviews' worth of insight — especially the uncomfortable parts."},
-      ]},
-      {label:'Week 2',theme:'Raise the quality bar',tasks:[
-        {day:'Days 6–9',title:'Upgrade your weakest practice',desc:"Take the lowest-scoring area from your audit. Don't patch it — rebuild it with what you now know.",outcome:'One substantially improved practice with clear before/after.'},
-        {day:'Days 10–11',title:'Create a quality standard for AI-assisted work',desc:"Define what 'good' looks like for AI-assisted output in your context. Something your team can use to self-assess.",outcome:'A written quality standard your team actually uses.'},
-      ]},
-      {label:'Week 3',theme:'Build external credibility',tasks:[
-        {day:'Days 12–16',title:'Develop your external AI narrative',desc:"Write the version of your AI story you'd share in a new business pitch. Clear, honest, differentiated.",outcome:'A compelling, specific external narrative about your AI approach.'},
-        {day:'Days 17–18',title:'Test it in a real conversation',desc:"Use your narrative in a real client or partner conversation. Notice what lands, what gets questions.",outcome:'A field-tested narrative with notes on what to sharpen.'},
-      ]},
-      {label:'Week 4',theme:'Plan for where you want to lead',tasks:[
-        {day:'Days 19–24',title:'Identify your leadership edge',desc:"What's the one thing you could be genuinely ahead on in the next 12 months? Name it.",outcome:'A named leadership ambition with an initial plan.'},
-        {day:'Days 25–28',title:'Invest in that edge',desc:"Take one concrete action toward your leadership ambition: a pilot, a conversation, a piece of IP.",outcome:'One concrete investment in your leadership edge.'},
-        {day:'Days 29–30',title:'Share what you've learned externally',desc:"Write a short piece sharing something you've genuinely learned about AI in creative work.",outcome:'One piece of external-facing thought leadership.'},
-      ]},
-    ],
-    reflection:"Established to Leading is a transition from having good practices to shaping the conversation. The question isn't 'are we doing this well?' — it's 'what do we know that others don't, and are we sharing it?'"
-  },
-  leading:{label:'Leading',color:'#8B6F47',
-    intro:"You're ahead of the curve. This plan helps you stay there and use your position to shape the field.",
-    weeks:[
-      {label:'Week 1',theme:'Diagnose your edge',tasks:[
-        {day:'Days 1–2',title:'Map your competitive advantage',desc:"Write down exactly what you do better than most creative organisations in AI. Be specific — not 'we use it responsibly.'",outcome:'A clear, honest map of your actual competitive advantage.'},
-        {day:'Days 3–4',title:'Find where your edge is eroding',desc:"Where is your lead shrinking? What have others caught up to? What do you need to do to stay genuinely ahead?",outcome:'An honest erosion map — where you need to reinvest.'},
-        {day:'Day 5',title:'Set a 12-month leadership target',desc:"Define one ambitious, specific goal for the next year. Make it something that requires sustained work.",outcome:'A 12-month leadership target with initial milestones.'},
-      ]},
-      {label:'Week 2',theme:'Deepen your hardest capabilities',tasks:[
-        {day:'Days 6–9',title:'Invest in your most complex capability',desc:"Identify the hardest thing you do well — the capability that took the longest to build. Invest deliberately in deepening it.",outcome:'One substantially deepened capability with a development plan.'},
-        {day:'Days 10–11',title:'Build your next capability',desc:"What's the capability you'll need in 12 months that you don't yet have? Start it now.",outcome:'A started pilot on your next capability.'},
-      ]},
-      {label:'Week 3',theme:'Share and shape',tasks:[
-        {day:'Days 12–15',title:'Create one piece of shareable IP',desc:"Codify something you know into a framework, a tool, a guide. Don't hoard your learning.",outcome:'One piece of IP ready to share.'},
-        {day:'Days 16–18',title:'Engage with the broader conversation',desc:"Write something, speak somewhere, host a conversation. Leading teams shape the field.",outcome:'One external engagement that contributes to the broader field.'},
-      ]},
-      {label:'Week 4',theme:'Build leadership infrastructure',tasks:[
-        {day:'Days 19–24',title:'Audit your AI culture',desc:"Is your AI culture transmissible? Would it survive if your most AI-fluent person left?",outcome:'An honest culture audit with three specific investments.'},
-        {day:'Days 25–27',title:'Build your next-generation pipeline',desc:"Who on your team is six months from being as capable as your best? What are they learning?",outcome:'A named development plan for your next generation of AI leaders.'},
-        {day:'Days 28–30',title:'Recommit to the long game',desc:"Write a letter to your team — or just yourself — about why this work matters and where you're going.",outcome:'A renewed sense of direction and a team that knows what it is.'},
-      ]},
-    ],
-    reflection:"The risk for Leading teams is that leadership becomes an identity rather than a practice. Stay curious, stay honest about where others are catching up, and invest in the capabilities that take real time to build."
-  },
-  principles:{label:'Principles clarity',color:'#8B6F47',
-    intro:"Build the values foundation that makes every AI decision easier.",
-    weeks:[
-      {label:'Week 1',theme:'Surface your actual values',tasks:[
-        {day:'Days 1–2',title:'Interview your senior creatives',desc:"Ask: What makes your work yours? What would you never outsource? Record answers — don't filter yet.",outcome:'Raw material: the real values underneath the official ones.'},
-        {day:'Days 3–4',title:'Map tensions explicitly',desc:"Where do your values conflict? Speed vs. craft. Efficiency vs. authorship. Name the tensions.",outcome:'A tensions map that your principles will need to address.'},
-        {day:'Day 5',title:'Draft your first principles skeleton',desc:"Use a simple format: 'We believe... / This means we... / This means we don't...' Three to five statements.",outcome:'A rough draft to pressure-test in Week 2.'},
-      ]},
-      {label:'Week 2',theme:'Test your principles against reality',tasks:[
-        {day:'Days 6–8',title:'Run a scenario workshop',desc:"Present five real-or-plausible AI scenarios. For each: what would you do? Does your draft guide you to the right answer?",outcome:'Tested principles with identified gaps.'},
-        {day:'Days 9–10',title:'Revise for specificity',desc:"For each statement, add one concrete example of what it means in practice. Remove any statement your team disagrees on.",outcome:'Revised principles that are specific enough to guide decisions.'},
-      ]},
-      {label:'Week 3',theme:'Make them operational',tasks:[
-        {day:'Days 11–14',title:'Connect principles to your workflow',desc:"For each stage of your creative process, ask: which principle applies here, and what does it require?",outcome:'A one-page principles-in-practice guide.'},
-        {day:'Days 15–17',title:'Brief your full team',desc:"Share the principles in a proper session — not an email. Explain the reasoning. Let people push back.",outcome:'A team that understands the principles and the reasoning behind them.'},
-      ]},
-      {label:'Week 4',theme:'Build a living document',tasks:[
-        {day:'Days 18–22',title:'Share with a trusted external partner',desc:"Present your principles to one client or collaborator. Their questions will show you where your thinking has gaps.",outcome:'External validation and new questions to sharpen your thinking.'},
-        {day:'Days 23–26',title:'Build in a review cadence',desc:"Set a quarterly review: what's changed, what tested our principles, do they still hold?",outcome:'A quarterly review scheduled with a simple agenda.'},
-        {day:'Days 27–30',title:'Publish internally',desc:"Put your principles somewhere everyone can find them. Give them visual weight — they're not fine print.",outcome:'Published principles with real visibility inside your organisation.'},
-      ]},
-    ],
-    reflection:"Principles clarity is never finished — it's a practice. The goal isn't a perfect document; it's a team that can have the hard conversation when AI creates a situation your policy didn't anticipate."
-  },
-  fluency:{label:'Tool fluency',color:'#5C7A5C',
-    intro:"Build genuine capability — not just familiarity — with AI across your team.",
-    weeks:[
-      {label:'Week 1',theme:'Assess your current capability honestly',tasks:[
-        {day:'Days 1–2',title:'Run a capability audit',desc:"Ask each team member to rate themselves on core AI tools. Then test it — give them a task and see what they produce.",outcome:'An honest capability map by person and by tool type.'},
-        {day:'Days 3–4',title:'Identify your fluency gaps',desc:"Where does your team's capability fall short of what your work requires? Which gaps would change your output quality most if closed?",outcome:'Prioritised fluency gaps with business impact noted.'},
-        {day:'Day 5',title:'Design a learning structure',desc:"What format works for your team? Structured workshops? Buddy pairs? Design one that fits your culture.",outcome:'A learning structure your team will actually engage with.'},
-      ]},
-      {label:'Week 2',theme:'Build shared fluency in your core tools',tasks:[
-        {day:'Days 6–9',title:'Run two focused workshops',desc:"Pick your two most relevant AI tool categories. Run a 90-minute workshop for each: real briefs, real output, real critique.",outcome:'Two workshops with real creative output to evaluate.'},
-        {day:'Days 10–11',title:'Build a shared prompt library',desc:"Collect the prompts and approaches that worked. Create a living library your whole team can contribute to and use.",outcome:'A started prompt library — at least ten entries, properly documented.'},
-      ]},
-      {label:'Week 3',theme:'Develop editorial judgment',tasks:[
-        {day:'Days 12–15',title:'Critique AI output as a team',desc:"Bring AI-generated work into your regular creative review. Treat it like any other work: what's good, what's off-brand, what's missing?",outcome:'A team that applies consistent editorial judgment to AI output.'},
-        {day:'Days 16–17',title:'Document your quality markers',desc:"What makes AI output 'good enough for us'? Write it down. These become your quality standards and onboarding material.",outcome:'Written quality markers for AI-assisted output in your context.'},
-      ]},
-      {label:'Week 4',theme:'Sustain and spread fluency',tasks:[
-        {day:'Days 18–22',title:'Identify your AI-fluent champions',desc:"Who on your team is genuinely excellent? Give them a formal role in sustaining fluency: running sessions, updating the prompt library.",outcome:'Named champions with a real role and time allocated.'},
-        {day:'Days 23–26',title:'Build fluency into onboarding',desc:"New hires should understand your AI practices in their first 30 days. Design the learning path.",outcome:'An onboarding module for AI fluency.'},
-        {day:'Days 27–30',title:'Set a 90-day fluency goal',desc:"Define the fluency level you want the team to be at in 90 days. Make it specific. Plan how to get there.",outcome:'A concrete 90-day fluency goal with a development plan.'},
-      ]},
-    ],
-    reflection:"Fluency is a team asset, not just an individual one. The goal is a culture where learning is visible, good technique is shared, and the bar rises because everyone contributes to raising it."
-  },
-  governance:{label:'Governance',color:'#B55A35',
-    intro:"Build the policies, processes, and accountability your team needs to work with AI confidently.",
-    weeks:[
-      {label:'Week 1',theme:'Understand your actual risk',tasks:[
-        {day:'Days 1–2',title:'Identify your top five AI risks',desc:"Where are you most exposed? IP, client disclosure, data privacy, output quality, vendor dependency? Rank them honestly.",outcome:'A risk map with your top five exposures.'},
-        {day:'Days 3–4',title:'Review your current contracts',desc:"Do your client agreements mention AI? Where are you making implied promises you can't keep? Get a legal read if needed.",outcome:'A clear picture of your contractual AI exposure.'},
-        {day:'Day 5',title:'Designate a governance owner',desc:"Governance without ownership is just documents. Name someone responsible with time, mandate, and accountability to leadership.",outcome:'A named governance owner with a clear remit.'},
-      ]},
-      {label:'Week 2',theme:'Build your core policy',tasks:[
-        {day:'Days 6–8',title:'Draft your AI use policy',desc:"Cover: what tools are approved, what data can be used, what requires disclosure, what requires approval, what's prohibited.",outcome:'A draft policy ready for team review.'},
-        {day:'Days 9–10',title:'Draft your disclosure standard',desc:"When and how will you tell clients AI was involved? Write a standard that's honest and something you're proud to own.",outcome:"A disclosure standard you'd be comfortable sharing proactively."},
-      ]},
-      {label:'Week 3',theme:'Build your incident response',tasks:[
-        {day:'Days 11–14',title:'Create a response protocol',desc:"What happens when AI produces something problematic? Write the steps. Name the owner.",outcome:'A documented incident response protocol.'},
-        {day:'Days 15–17',title:'Run a tabletop exercise',desc:"Simulate two AI incident scenarios with your leadership team. Follow the protocol. Notice where it breaks down.",outcome:'A tested, revised protocol ready for real use.'},
-      ]},
-      {label:'Week 4',theme:'Operationalise and maintain',tasks:[
-        {day:'Days 18–22',title:'Brief the full team',desc:"Don't email the policy. Walk people through it. Governance only works if people understand why it exists.",outcome:'A team that understands and can apply your governance.'},
-        {day:'Days 23–26',title:'Build your tool register',desc:"Document every AI tool your team uses: what it does, who approved it, what data it touches. Review quarterly.",outcome:'A maintained tool register.'},
-        {day:'Days 27–30',title:'Schedule quarterly governance reviews',desc:"Book four reviews for the year. The discipline of review is what makes governance alive.",outcome:'A quarterly review cadence established.'},
-      ]},
-    ],
-    reflection:"Good governance is invisible when it's working. Your team shouldn't feel constrained by it — they should feel supported."
-  },
-  alignment:{label:'Team alignment',color:'#C4923A',
-    intro:"Build the shared understanding and psychological safety that makes AI adoption actually work.",
-    weeks:[
-      {label:'Week 1',theme:'Listen before leading',tasks:[
-        {day:'Days 1–3',title:'Run one-on-one listening sessions',desc:"Ask 8–10 people: How do you feel about AI in our work? What excites you? What worries you? Don't defend — just listen.",outcome:"A clear picture of where your team actually is emotionally and philosophically."},
-        {day:'Days 4–5',title:'Map your alignment landscape',desc:"Segment what you heard: enthusiasts, pragmatists, skeptics, resistors. Understand the reasoning behind each position.",outcome:'An alignment map with the key tensions named.'},
-      ]},
-      {label:'Week 2',theme:'Create shared understanding',tasks:[
-        {day:'Days 6–8',title:'Hold a full team AI conversation',desc:"Not a presentation — a conversation. Share what you learned from the listening sessions. Ask the team to grapple with the tensions together.",outcome:"A team that has heard each other's perspectives on AI."},
-        {day:'Days 9–11',title:'Co-create three shared agreements',desc:"Identify three things the team can agree on: what you'll try, what you won't do, how you'll make decisions together.",outcome:'Three shared agreements with genuine buy-in.'},
-      ]},
-      {label:'Week 3',theme:'Build psychological safety',tasks:[
-        {day:'Days 12–15',title:'Make concern-raising normal',desc:"Create a standing channel for people to raise AI concerns without judgment. Name it explicitly. Use it yourself first.",outcome:'A visible mechanism for raising concerns that people actually use.'},
-        {day:'Days 16–18',title:'Acknowledge the fear openly',desc:"Some resistance to AI is about job security, creative identity, and relevance. If you don't name it, it goes underground.",outcome:'A leadership message that addresses the real fears directly.'},
-      ]},
-      {label:'Week 4',theme:'Make alignment visible',tasks:[
-        {day:'Days 19–22',title:'Build AI into your team rhythm',desc:"Add a standing AI agenda item to your existing team meetings. Not a separate meeting — just a regular slot.",outcome:'AI embedded in your regular team cadence.'},
-        {day:'Days 23–26',title:'Recognise and share good work',desc:"When someone does something excellent with AI, celebrate it visibly. This builds cultural norms faster than any policy.",outcome:'A pattern of recognising AI excellence that becomes part of your culture.'},
-        {day:'Days 27–30',title:"Write your team's AI story",desc:"Draft a narrative about your team's relationship with AI: where you started, what you've learned, where you're going.",outcome:'A shared narrative your team recognises as true.'},
-      ]},
-    ],
-    reflection:"Alignment is not agreement. You need everyone to understand each other, trust the process, and feel heard. That's the foundation for a team that can navigate a fast-changing landscape together."
-  },
-  brand:{label:'Brand system health',color:'#6B5240',
-    intro:"Protect and evolve your brand identity in a world where AI can dilute or amplify it.",
-    weeks:[
-      {label:'Week 1',theme:'Know what you're protecting',tasks:[
-        {day:'Days 1–2',title:"Identify your brand's most distinctive elements",desc:"What makes your brand immediately recognisable? Not the logo — the texture, the voice, the specific ways you see the world.",outcome:"A list of your brand's most specific, irreducible elements."},
-        {day:'Days 3–4',title:'Test AI against your brand',desc:"Give your brand brief to three different AI tools. Evaluate the results honestly: what did it get? What did it miss? Why?",outcome:"A clear picture of where AI can approximate your brand and where it can't."},
-        {day:'Day 5',title:'Map your homogenisation risk',desc:"Which elements of your brand are most at risk from AI's tendency toward the average? Where do you need to invest to stay distinct?",outcome:'A brand risk map focused on AI homogenisation.'},
-      ]},
-      {label:'Week 2',theme:'Document your brand for AI use',tasks:[
-        {day:'Days 6–8',title:'Audit your brand documentation',desc:"Is your visual identity, voice, and values documented in a way that could guide AI use? Most brand guides weren't written for this.",outcome:"An honest audit of your brand documentation's AI-readiness."},
-        {day:'Days 9–11',title:'Add AI-specific brand guidance',desc:"For your top three brand elements, write specific guidance: what to ask for, what to avoid, what the failure modes look like.",outcome:'Practical AI guidance added to your brand system.'},
-      ]},
-      {label:'Week 3',theme:'Build brand-safe AI workflows',tasks:[
-        {day:'Days 12–15',title:'Create a brand prompting guide',desc:"Document the prompts and approaches that produce on-brand AI output. Include examples — both good and bad.",outcome:'A brand prompting guide your team can use immediately.'},
-        {day:'Days 16–18',title:'Build a brand review step for AI work',desc:"Add an explicit brand check to your AI output review process. What are you looking for? Who reviews it?",outcome:'A brand review step embedded in your AI workflow.'},
-      ]},
-      {label:'Week 4',theme:'Make your brand AI-resilient',tasks:[
-        {day:'Days 19–22',title:"Invest in your brand's un-AI-able qualities",desc:"What makes your brand hardest to replicate with AI? Specific human perspective, accumulated cultural knowledge. Invest explicitly.",outcome:'A named set of brand investments that build AI-resistance.'},
-        {day:'Days 23–26',title:'Apply this to client brands',desc:"For your most important client brands, run the same exercise: test, document, guide. This becomes a service offering.",outcome:'Client brand AI documentation started for your top three clients.'},
-        {day:'Days 27–30',title:'Set a brand monitoring cadence',desc:"Set a quarterly brand review that specifically asks: is our brand still distinctive? What's the field doing?",outcome:'A quarterly brand monitoring practice established.'},
-      ]},
-    ],
-    reflection:"Brand system health in the age of AI is about knowing what you're protecting and why — and then investing deliberately in the qualities that make generic outputs impossible. Your distinctiveness is your moat."
-  },
+var PLANS = {
+  exploring:{label:'Exploring',color:'#B55A35',intro:'You are at the beginning. This plan helps you build the right foundations before moving fast.',weeks:[{label:'Week 1',theme:'Get honest about where you are',tasks:[{day:'Days 1-2',title:'Run a team inventory',desc:'Ask every team member to list the AI tools they have tried, even personally. No judgment — just data.',outcome:'A shared doc with current AI touchpoints across the team.'},{day:'Days 3-4',title:'Hold a values conversation',desc:'Facilitate a 60-minute session: What do we make? What makes it ours? Where does craft live? Do not resolve it — just surface it.',outcome:'Documented tensions and values that will anchor your principles.'},{day:'Day 5',title:'Designate an AI point person',desc:'This does not need to be a new role. Someone who will hold the thread for the next 30 days. Give them real time, not just a title.',outcome:'One named person with a clear 30-day remit.'}]},{label:'Week 2',theme:'Define your principles',tasks:[{day:'Days 6-8',title:'Draft your first AI principles',desc:'Use a simple format: what AI is for, what it is not for, and what requires human sign-off. Keep it to one page.',outcome:'A draft principles statement your team can react to.'},{day:'Days 9-10',title:'Get team reactions',desc:'Share the draft. Ask: Does this feel true? What is missing? Revise based on what you hear.',outcome:'A revised draft with team input incorporated.'}]},{label:'Week 3',theme:'Pick one tool and go deep',tasks:[{day:'Days 11-14',title:'Choose one AI tool to explore together',desc:'Pick one tool relevant to your core work. Run a structured experiment: give the same brief to the tool and to a human. Compare results.',outcome:'A shared understanding of one tool\'s capabilities and limits.'},{day:'Days 15-17',title:'Document what you learn',desc:'Capture what worked, what surprised you, what felt wrong, what you would need to change to use this well.',outcome:'Your first tool evaluation — a template for future tools.'}]},{label:'Week 4',theme:'Set up for the next stage',tasks:[{day:'Days 18-24',title:'Draft a one-page AI policy',desc:'Combine your principles and tool learning into a simple policy: what we do, what we do not, who decides.',outcome:'A one-page policy you are not embarrassed to share.'},{day:'Days 25-28',title:'Schedule your first governance check-in',desc:'Book a 45-minute monthly AI review. The discipline of regular review is the whole point.',outcome:'A recurring meeting on the calendar.'},{day:'Days 29-30',title:'Celebrate and name what changed',desc:'Acknowledge what your team built this month. Name the shift from AI is happening to us to we have a point of view.',outcome:'A team moment that marks the transition to Emerging.'}]}],reflection:'At the end of 30 days you should have: a drafted principles statement, your first tool evaluation, a simple AI policy, and a recurring governance cadence. You will not be done — but you will have a foundation.'},
+  emerging:{label:'Emerging',color:'#C4923A',intro:'You have momentum. This plan helps you connect the pieces into a coherent system.',weeks:[{label:'Week 1',theme:'Audit what you actually have',tasks:[{day:'Days 1-2',title:'Map current AI activity',desc:'Document every place AI is touching your work: tools used, by whom, for what. Build a full picture before building further.',outcome:'A complete map of current AI activity across your team.'},{day:'Days 3-4',title:'Identify your gaps and overlaps',desc:'Where are people doing the same thing independently? Where are there no practices at all?',outcome:'A gap analysis with three priority areas.'},{day:'Day 5',title:'Choose your integration focus',desc:'Pick the one dimension where integration would have the most impact right now.',outcome:'A clear focus area for the next 25 days.'}]},{label:'Week 2',theme:'Align the team',tasks:[{day:'Days 6-8',title:'Run a cross-team alignment session',desc:'Bring together creatives, leaders, and ops. Share the gap analysis. Ask: what is working, what is frustrating, what do we need to agree on?',outcome:'A shared understanding of where you are misaligned and why.'},{day:'Days 9-10',title:'Document three shared agreements',desc:'Pull three concrete agreements: things everyone will do, will not do, or will decide together. Write them down.',outcome:'Three written, shared agreements that reflect actual consensus.'}]},{label:'Week 3',theme:'Systematise one practice',tasks:[{day:'Days 11-15',title:'Build one repeatable practice',desc:'Take your integration focus area and build a simple, repeatable process: a checklist, a template, a decision framework.',outcome:'One documented practice your team will use consistently.'},{day:'Days 16-17',title:'Test it with a real project',desc:'Apply your new practice to something live. Note what breaks, what is missing. Revise immediately.',outcome:'A tested, revised practice — not a theory.'}]},{label:'Week 4',theme:'Scale and communicate',tasks:[{day:'Days 18-24',title:'Communicate the shift internally',desc:'Write a brief internal memo: here is what we have been building, here is what changed, here is what is expected of everyone.',outcome:'An internal communication that makes the work visible.'},{day:'Days 25-28',title:'Brief a trusted external partner',desc:'Share your current AI approach with one client or collaborator. Their questions will show you where your thinking has gaps.',outcome:'External validation and a sharpened external narrative.'},{day:'Days 29-30',title:'Set 90-day goals',desc:'Define three specific outcomes for the next quarter: one for your practices, one for fluency, one for governance.',outcome:'A 90-day plan that builds on this month\'s work.'}]}],reflection:'Emerging to Established is about consistency. The measure of success is whether a new person joining your team would quickly understand your AI culture.'},
+  established:{label:'Established',color:'#5C7A5C',intro:'Your foundations are solid. This plan helps you deepen quality and move from reactive to deliberate.',weeks:[{label:'Week 1',theme:'Stress-test what you have built',tasks:[{day:'Days 1-3',title:'Conduct an internal AI audit',desc:'Review your practices against your stated principles. Where are the gaps? Where has practice drifted from intention?',outcome:'An honest audit with three findings you will act on.'},{day:'Days 4-5',title:'Interview your team',desc:'Ask five people: What is working? What frustrates you? What are we not talking about? Listen without defending.',outcome:'Five interviews worth of insight — especially the uncomfortable parts.'}]},{label:'Week 2',theme:'Raise the quality bar',tasks:[{day:'Days 6-9',title:'Upgrade your weakest practice',desc:'Take the lowest-scoring area from your audit. Do not patch it — rebuild it with what you now know.',outcome:'One substantially improved practice with clear before and after.'},{day:'Days 10-11',title:'Create a quality standard for AI-assisted work',desc:'Define what good looks like for AI-assisted output in your context. Something your team can use to self-assess.',outcome:'A written quality standard your team actually uses.'}]},{label:'Week 3',theme:'Build external credibility',tasks:[{day:'Days 12-16',title:'Develop your external AI narrative',desc:'Write the version of your AI story you would share in a new business pitch. Clear, honest, differentiated.',outcome:'A compelling, specific external narrative about your AI approach.'},{day:'Days 17-18',title:'Test it in a real conversation',desc:'Use your narrative in a real client or partner conversation. Notice what lands, what gets questions.',outcome:'A field-tested narrative with notes on what to sharpen.'}]},{label:'Week 4',theme:'Plan for where you want to lead',tasks:[{day:'Days 19-24',title:'Identify your leadership edge',desc:'What is the one thing you could be genuinely ahead on in the next 12 months? Name it.',outcome:'A named leadership ambition with an initial plan.'},{day:'Days 25-28',title:'Invest in that edge',desc:'Take one concrete action toward your leadership ambition: a pilot, a conversation, a piece of IP.',outcome:'One concrete investment in your leadership edge.'},{day:'Days 29-30',title:'Share what you have learned externally',desc:'Write a short piece sharing something you have genuinely learned about AI in creative work.',outcome:'One piece of external-facing thought leadership.'}]}],reflection:'Established to Leading is a transition from having good practices to shaping the conversation. The question is not are we doing this well — it is what do we know that others do not, and are we sharing it?'},
+  leading:{label:'Leading',color:'#8B6F47',intro:'You are ahead of the curve. This plan helps you stay there and use your position to shape the field.',weeks:[{label:'Week 1',theme:'Diagnose your edge',tasks:[{day:'Days 1-2',title:'Map your competitive advantage',desc:'Write down exactly what you do better than most creative organisations in AI. Be specific — not we use it responsibly.',outcome:'A clear, honest map of your actual competitive advantage.'},{day:'Days 3-4',title:'Find where your edge is eroding',desc:'Where is your lead shrinking? What have others caught up to? What do you need to do to stay genuinely ahead?',outcome:'An honest erosion map — where you need to reinvest.'},{day:'Day 5',title:'Set a 12-month leadership target',desc:'Define one ambitious, specific goal for the next year. Make it something that requires sustained work.',outcome:'A 12-month leadership target with initial milestones.'}]},{label:'Week 2',theme:'Deepen your hardest capabilities',tasks:[{day:'Days 6-9',title:'Invest in your most complex capability',desc:'Identify the hardest thing you do well — the capability that took the longest to build. Invest deliberately in deepening it.',outcome:'One substantially deepened capability with a development plan.'},{day:'Days 10-11',title:'Build your next capability',desc:'What is the capability you will need in 12 months that you do not yet have? Start it now.',outcome:'A started pilot on your next capability.'}]},{label:'Week 3',theme:'Share and shape',tasks:[{day:'Days 12-15',title:'Create one piece of shareable IP',desc:'Codify something you know into a framework, a tool, a guide. Do not hoard your learning.',outcome:'One piece of IP ready to share.'},{day:'Days 16-18',title:'Engage with the broader conversation',desc:'Write something, speak somewhere, host a conversation. Leading teams shape the field.',outcome:'One external engagement that contributes to the broader field.'}]},{label:'Week 4',theme:'Build leadership infrastructure',tasks:[{day:'Days 19-24',title:'Audit your AI culture',desc:'Is your AI culture transmissible? Would it survive if your most AI-fluent person left?',outcome:'An honest culture audit with three specific investments.'},{day:'Days 25-27',title:'Build your next-generation pipeline',desc:'Who on your team is six months from being as capable as your best? What are they learning?',outcome:'A named development plan for your next generation of AI leaders.'},{day:'Days 28-30',title:'Recommit to the long game',desc:'Write a letter to your team — or just yourself — about why this work matters and where you are going.',outcome:'A renewed sense of direction and a team that knows what it is.'}]}],reflection:'The risk for Leading teams is that leadership becomes an identity rather than a practice. Stay curious, stay honest about where others are catching up, and invest in the capabilities that take real time to build.'},
+  principles:{label:'Principles clarity',color:'#8B6F47',intro:'Build the values foundation that makes every AI decision easier.',weeks:[{label:'Week 1',theme:'Surface your actual values',tasks:[{day:'Days 1-2',title:'Interview your senior creatives',desc:'Ask: What makes your work yours? What would you never outsource? Record answers — do not filter yet.',outcome:'Raw material: the real values underneath the official ones.'},{day:'Days 3-4',title:'Map tensions explicitly',desc:'Where do your values conflict? Speed versus craft. Efficiency versus authorship. Name the tensions.',outcome:'A tensions map that your principles will need to address.'},{day:'Day 5',title:'Draft your first principles skeleton',desc:'Use a simple format: We believe... This means we... This means we do not... Three to five statements.',outcome:'A rough draft to pressure-test in Week 2.'}]},{label:'Week 2',theme:'Test your principles against reality',tasks:[{day:'Days 6-8',title:'Run a scenario workshop',desc:'Present five real-or-plausible AI scenarios. For each: what would you do? Does your draft guide you to the right answer?',outcome:'Tested principles with identified gaps.'},{day:'Days 9-10',title:'Revise for specificity',desc:'For each statement, add one concrete example of what it means in practice. Remove any statement your team disagrees on.',outcome:'Revised principles that are specific enough to guide decisions.'}]},{label:'Week 3',theme:'Make them operational',tasks:[{day:'Days 11-14',title:'Connect principles to your workflow',desc:'For each stage of your creative process, ask: which principle applies here, and what does it require?',outcome:'A one-page principles-in-practice guide.'},{day:'Days 15-17',title:'Brief your full team',desc:'Share the principles in a proper session — not an email. Explain the reasoning. Let people push back.',outcome:'A team that understands the principles and the reasoning behind them.'}]},{label:'Week 4',theme:'Build a living document',tasks:[{day:'Days 18-22',title:'Share with a trusted external partner',desc:'Present your principles to one client or collaborator. Their questions will show you where your thinking has gaps.',outcome:'External validation and new questions to sharpen your thinking.'},{day:'Days 23-26',title:'Build in a review cadence',desc:'Set a quarterly review: what has changed, what tested our principles, do they still hold?',outcome:'A quarterly review scheduled with a simple agenda.'},{day:'Days 27-30',title:'Publish internally',desc:'Put your principles somewhere everyone can find them. Give them visual weight — they are not fine print.',outcome:'Published principles with real visibility inside your organisation.'}]}],reflection:'Principles clarity is never finished — it is a practice. The goal is not a perfect document; it is a team that can have the hard conversation when AI creates a situation your policy did not anticipate.'},
+  fluency:{label:'Tool fluency',color:'#5C7A5C',intro:'Build genuine capability — not just familiarity — with AI across your team.',weeks:[{label:'Week 1',theme:'Assess your current capability honestly',tasks:[{day:'Days 1-2',title:'Run a capability audit',desc:'Ask each team member to rate themselves on core AI tools. Then test it — give them a task and see what they produce.',outcome:'An honest capability map by person and by tool type.'},{day:'Days 3-4',title:'Identify your fluency gaps',desc:'Where does your capability fall short of what your work requires? Which gaps would change your output quality most if closed?',outcome:'Prioritised fluency gaps with business impact noted.'},{day:'Day 5',title:'Design a learning structure',desc:'What format works for your team? Structured workshops? Buddy pairs? Design one that fits your culture.',outcome:'A learning structure your team will actually engage with.'}]},{label:'Week 2',theme:'Build shared fluency in your core tools',tasks:[{day:'Days 6-9',title:'Run two focused workshops',desc:'Pick your two most relevant AI tool categories. Run a 90-minute workshop for each: real briefs, real output, real critique.',outcome:'Two workshops with real creative output to evaluate.'},{day:'Days 10-11',title:'Build a shared prompt library',desc:'Collect the prompts and approaches that worked. Create a living library your whole team can contribute to and use.',outcome:'A started prompt library — at least ten entries, properly documented.'}]},{label:'Week 3',theme:'Develop editorial judgment',tasks:[{day:'Days 12-15',title:'Critique AI output as a team',desc:'Bring AI-generated work into your regular creative review. Treat it like any other work: what is good, what is off-brand, what is missing?',outcome:'A team that applies consistent editorial judgment to AI output.'},{day:'Days 16-17',title:'Document your quality markers',desc:'What makes AI output good enough for us? Write it down. These become your quality standards and onboarding material.',outcome:'Written quality markers for AI-assisted output in your context.'}]},{label:'Week 4',theme:'Sustain and spread fluency',tasks:[{day:'Days 18-22',title:'Identify your AI-fluent champions',desc:'Who on your team is genuinely excellent? Give them a formal role in sustaining fluency: running sessions, updating the prompt library.',outcome:'Named champions with a real role and time allocated.'},{day:'Days 23-26',title:'Build fluency into onboarding',desc:'New hires should understand your AI practices in their first 30 days. Design the learning path.',outcome:'An onboarding module for AI fluency.'},{day:'Days 27-30',title:'Set a 90-day fluency goal',desc:'Define the fluency level you want the team to be at in 90 days. Make it specific. Plan how to get there.',outcome:'A concrete 90-day fluency goal with a development plan.'}]}],reflection:'Fluency is a team asset, not just an individual one. The goal is a culture where learning is visible, good technique is shared, and the bar rises because everyone contributes to raising it.'},
+  governance:{label:'Governance',color:'#B55A35',intro:'Build the policies, processes, and accountability your team needs to work with AI confidently.',weeks:[{label:'Week 1',theme:'Understand your actual risk',tasks:[{day:'Days 1-2',title:'Identify your top five AI risks',desc:'Where are you most exposed? IP, client disclosure, data privacy, output quality, vendor dependency? Rank them honestly.',outcome:'A risk map with your top five exposures.'},{day:'Days 3-4',title:'Review your current contracts',desc:'Do your client agreements mention AI? Where are you making implied promises you cannot keep? Get a legal read if needed.',outcome:'A clear picture of your contractual AI exposure.'},{day:'Day 5',title:'Designate a governance owner',desc:'Governance without ownership is just documents. Name someone responsible with time, mandate, and accountability to leadership.',outcome:'A named governance owner with a clear remit.'}]},{label:'Week 2',theme:'Build your core policy',tasks:[{day:'Days 6-8',title:'Draft your AI use policy',desc:'Cover: what tools are approved, what data can be used, what requires disclosure, what requires approval, what is prohibited.',outcome:'A draft policy ready for team review.'},{day:'Days 9-10',title:'Draft your disclosure standard',desc:'When and how will you tell clients AI was involved? Write a standard that is honest and something you are proud to own.',outcome:'A disclosure standard you would be comfortable sharing proactively.'}]},{label:'Week 3',theme:'Build your incident response',tasks:[{day:'Days 11-14',title:'Create a response protocol',desc:'What happens when AI produces something problematic? Write the steps. Name the owner.',outcome:'A documented incident response protocol.'},{day:'Days 15-17',title:'Run a tabletop exercise',desc:'Simulate two AI incident scenarios with your leadership team. Follow the protocol. Notice where it breaks down.',outcome:'A tested, revised protocol ready for real use.'}]},{label:'Week 4',theme:'Operationalise and maintain',tasks:[{day:'Days 18-22',title:'Brief the full team',desc:'Do not email the policy. Walk people through it. Governance only works if people understand why it exists.',outcome:'A team that understands and can apply your governance.'},{day:'Days 23-26',title:'Build your tool register',desc:'Document every AI tool your team uses: what it does, who approved it, what data it touches. Review quarterly.',outcome:'A maintained tool register.'},{day:'Days 27-30',title:'Schedule quarterly governance reviews',desc:'Book four reviews for the year. The discipline of review is what makes governance alive.',outcome:'A quarterly review cadence established.'}]}],reflection:'Good governance is invisible when it is working. Your team should not feel constrained by it — they should feel supported.'},
+  alignment:{label:'Team alignment',color:'#C4923A',intro:'Build the shared understanding and psychological safety that makes AI adoption actually work.',weeks:[{label:'Week 1',theme:'Listen before leading',tasks:[{day:'Days 1-3',title:'Run one-on-one listening sessions',desc:'Talk to 8 to 10 people across roles and seniority levels. Ask: How do you feel about AI in our work? What excites you? What worries you? Do not defend — just listen.',outcome:'A clear picture of where your team actually is emotionally and philosophically.'},{day:'Days 4-5',title:'Map your alignment landscape',desc:'Segment what you heard: enthusiasts, pragmatists, sceptics, resistors. Understand the reasoning behind each position.',outcome:'An alignment map with the key tensions named.'}]},{label:'Week 2',theme:'Create shared understanding',tasks:[{day:'Days 6-8',title:'Hold a full team AI conversation',desc:'Not a presentation — a conversation. Share what you learned from the listening sessions. Ask the team to grapple with the tensions together.',outcome:'A team that has heard each other\'s perspectives on AI.'},{day:'Days 9-11',title:'Co-create three shared agreements',desc:'Identify three things the team can agree on: what you will try, what you will not do, how you will make decisions together.',outcome:'Three shared agreements with genuine buy-in.'}]},{label:'Week 3',theme:'Build psychological safety',tasks:[{day:'Days 12-15',title:'Make concern-raising normal',desc:'Create a standing channel for people to raise AI concerns without judgment. Name it explicitly. Use it yourself first.',outcome:'A visible mechanism for raising concerns that people actually use.'},{day:'Days 16-18',title:'Acknowledge the fear openly',desc:'Some resistance to AI is about job security, creative identity, and relevance. If you do not name it, it goes underground.',outcome:'A leadership message that addresses the real fears directly.'}]},{label:'Week 4',theme:'Make alignment visible',tasks:[{day:'Days 19-22',title:'Build AI into your team rhythm',desc:'Add a standing AI agenda item to your existing team meetings. Not a separate meeting — just a regular slot.',outcome:'AI embedded in your regular team cadence.'},{day:'Days 23-26',title:'Recognise and share good work',desc:'When someone does something excellent with AI, celebrate it visibly. This builds cultural norms faster than any policy.',outcome:'A pattern of recognising AI excellence that becomes part of your culture.'},{day:'Days 27-30',title:'Write your team\'s AI story',desc:'Draft a narrative about your relationship with AI: where you started, what you have learned, where you are going.',outcome:'A shared narrative your team recognises as true.'}]}],reflection:'Alignment is not agreement. You need everyone to understand each other, trust the process, and feel heard. That is the foundation for a team that can navigate a fast-changing landscape together.'},
+  brand:{label:'Brand system health',color:'#6B5240',intro:'Protect and evolve your brand identity in a world where AI can dilute or amplify it.',weeks:[{label:'Week 1',theme:'Know what you are protecting',tasks:[{day:'Days 1-2',title:'Identify your most distinctive brand elements',desc:'What makes your brand immediately recognisable? Not the logo — the texture, the voice, the specific ways you see the world.',outcome:'A list of your brand\'s most specific, irreducible elements.'},{day:'Days 3-4',title:'Test AI against your brand',desc:'Give your brand brief to three different AI tools. Evaluate the results honestly: what did it get? What did it miss? Why?',outcome:'A clear picture of where AI can approximate your brand and where it cannot.'},{day:'Day 5',title:'Map your homogenisation risk',desc:'Which elements of your brand are most at risk from AI\'s tendency toward the average? Where do you need to invest to stay distinct?',outcome:'A brand risk map focused on AI homogenisation.'}]},{label:'Week 2',theme:'Document your brand for AI use',tasks:[{day:'Days 6-8',title:'Audit your brand documentation',desc:'Is your visual identity, voice, and values documented in a way that could guide AI use? Most brand guides were not written for this.',outcome:'An honest audit of your brand documentation\'s AI-readiness.'},{day:'Days 9-11',title:'Add AI-specific brand guidance',desc:'For your top three brand elements, write specific guidance: what to ask for, what to avoid, what the failure modes look like.',outcome:'Practical AI guidance added to your brand system.'}]},{label:'Week 3',theme:'Build brand-safe AI workflows',tasks:[{day:'Days 12-15',title:'Create a brand prompting guide',desc:'Document the prompts and approaches that produce on-brand AI output. Include examples — both good and bad.',outcome:'A brand prompting guide your team can use immediately.'},{day:'Days 16-18',title:'Build a brand review step for AI work',desc:'Add an explicit brand check to your AI output review process. What are you looking for? Who reviews it?',outcome:'A brand review step embedded in your AI workflow.'}]},{label:'Week 4',theme:'Make your brand AI-resilient',tasks:[{day:'Days 19-22',title:'Invest in your brand\'s distinctive qualities',desc:'What makes your brand hardest to replicate with AI? Specific human perspective, accumulated cultural knowledge. Invest explicitly.',outcome:'A named set of brand investments that build AI-resistance.'},{day:'Days 23-26',title:'Apply this to client brands',desc:'For your most important client brands, run the same exercise: test, document, guide. This becomes a service offering.',outcome:'Client brand AI documentation started for your top three clients.'},{day:'Days 27-30',title:'Set a brand monitoring cadence',desc:'Set a quarterly brand review that asks: is our brand still distinctive? What is the field doing? How do we respond?',outcome:'A quarterly brand monitoring practice established.'}]}],reflection:'Brand system health in the age of AI is about knowing what you are protecting and why — and then investing deliberately in the qualities that make generic outputs impossible. Your distinctiveness is your moat.'}
 };
 
-let curQ=0, answers={};
+var curQ = 0;
+var answers = {};
+var radarChart = null;
 
-function show(id){document.querySelectorAll('.screen').forEach(s=>s.classList.remove('active'));document.getElementById(id).classList.add('active')}
-function startAssessment(){curQ=0;answers={};renderQ();show('s-questions')}
-function restartAssessment(){startAssessment()}
-
-function renderQ(){
-  const q=QS[curQ];
-  const di=DIMS.findIndex(d=>d.key===q.d);
-  const dqs=QS.filter(x=>x.d===q.d);
-  const pos=dqs.indexOf(q)+1;
-  document.getElementById('dim-lbl').textContent=DIMS[di].name;
-  document.getElementById('q-of').textContent=`Question ${curQ+1} of ${QS.length}`;
-  document.getElementById('q-ctr').textContent=`${curQ+1} / ${QS.length}`;
-  document.getElementById('prog-bar').style.width=`${(curQ/QS.length)*100}%`;
-  document.getElementById('cur-dim').textContent=`${DIMS[di].name} — ${pos} of ${dqs.length}`;
-  document.getElementById('dim-dot').style.background=DIMS[di].color;
-  document.getElementById('q-text').textContent=q.t;
-  const ol=document.getElementById('opts');
-  ol.innerHTML='';
-  q.o.forEach((opt,i)=>{
-    const b=document.createElement('button');
-    b.className='opt'+(answers[curQ]===i?' sel':'');
-    b.innerHTML=`<span class="opt-n">${i+1}</span><span>${opt}</span>`;
-    b.onclick=()=>{answers[curQ]=i;document.querySelectorAll('.opt').forEach(x=>x.classList.remove('sel'));b.classList.add('sel')};
-    ol.appendChild(b);
-  });
-  document.getElementById('btn-prev').style.visibility=curQ===0?'hidden':'visible';
-  document.getElementById('btn-next').innerHTML=curQ===QS.length-1?'View my report &#8594;':'Next &#8594;';
+function show(id) {
+  document.querySelectorAll('.screen').forEach(function(s) { s.classList.remove('active'); });
+  document.getElementById(id).classList.add('active');
 }
 
-function nextQ(){
-  if(answers[curQ]===undefined){const ol=document.getElementById('opts');ol.style.outline='1px solid #B55A35';setTimeout(()=>ol.style.outline='',600);return}
-  if(curQ<QS.length-1){curQ++;renderQ()}else{generateReport()}
+function startAssessment() {
+  curQ = 0;
+  answers = {};
+  renderQ();
+  show('s-questions');
 }
-function prevQ(){if(curQ>0){curQ--;renderQ()}}
 
-async function generateReport(){
+function renderQ() {
+  var q = QS[curQ];
+  var di = -1;
+  for (var i = 0; i < DIMS.length; i++) { if (DIMS[i].key === q.d) { di = i; break; } }
+  var dqs = QS.filter(function(x) { return x.d === q.d; });
+  var pos = dqs.indexOf(q) + 1;
+  document.getElementById('dim-lbl').textContent = DIMS[di].name;
+  document.getElementById('q-of').textContent = 'Question ' + (curQ + 1) + ' of ' + QS.length;
+  document.getElementById('q-ctr').textContent = (curQ + 1) + ' / ' + QS.length;
+  document.getElementById('prog-bar').style.width = Math.round((curQ / QS.length) * 100) + '%';
+  document.getElementById('cur-dim').textContent = DIMS[di].name + ' — ' + pos + ' of ' + dqs.length;
+  document.getElementById('dim-dot').style.background = DIMS[di].color;
+  document.getElementById('q-text').textContent = q.t;
+  var ol = document.getElementById('opts');
+  ol.innerHTML = '';
+  for (var j = 0; j < q.o.length; j++) {
+    (function(idx) {
+      var b = document.createElement('button');
+      b.className = 'opt' + (answers[curQ] === idx ? ' sel' : '');
+      b.innerHTML = '<span class="opt-n">' + (idx + 1) + '</span><span>' + q.o[idx] + '</span>';
+      b.onclick = function() {
+        answers[curQ] = idx;
+        var all = document.querySelectorAll('.opt');
+        for (var k = 0; k < all.length; k++) all[k].classList.remove('sel');
+        b.classList.add('sel');
+      };
+      ol.appendChild(b);
+    })(j);
+  }
+  document.getElementById('btn-prev').style.visibility = curQ === 0 ? 'hidden' : 'visible';
+  document.getElementById('btn-next').innerHTML = curQ === QS.length - 1 ? 'View my report &#8594;' : 'Next &#8594;';
+}
+
+function nextQ() {
+  if (answers[curQ] === undefined) {
+    var ol = document.getElementById('opts');
+    ol.style.outline = '1px solid #B55A35';
+    setTimeout(function() { ol.style.outline = ''; }, 600);
+    return;
+  }
+  if (curQ < QS.length - 1) { curQ++; renderQ(); }
+  else { generateReport(); }
+}
+
+function prevQ() {
+  if (curQ > 0) { curQ--; renderQ(); }
+}
+
+function generateReport() {
   show('s-loading');
-  const ds={};
-  DIMS.forEach(d=>{
-    const qs=QS.filter(q=>q.d===d.key);
-    let tot=0;
-    qs.forEach(q=>{const gi=QS.indexOf(q);tot+=(answers[gi]!==undefined?answers[gi]:2)});
-    ds[d.key]=Math.round((tot/(qs.length*4))*100);
-  });
-  const overall=Math.round(Object.values(ds).reduce((a,b)=>a+b,0)/5);
-  const mat=MATURITY.find(m=>overall>=m.min&&overall<=m.max)||MATURITY[1];
-  const sorted=DIMS.slice().sort((a,b)=>ds[a.key]-ds[b.key]);
+  var ds = {};
+  for (var i = 0; i < DIMS.length; i++) {
+    var d = DIMS[i];
+    var qs = QS.filter(function(q) { return q.d === d.key; });
+    var tot = 0;
+    for (var j = 0; j < qs.length; j++) {
+      var gi = QS.indexOf(qs[j]);
+      tot += (answers[gi] !== undefined ? answers[gi] : 2);
+    }
+    ds[d.key] = Math.round((tot / (qs.length * 4)) * 100);
+  }
+  var sum = 0;
+  for (var k in ds) sum += ds[k];
+  var overall = Math.round(sum / 5);
+  var mat = MATURITY[1];
+  for (var m = 0; m < MATURITY.length; m++) {
+    if (overall >= MATURITY[m].min && overall <= MATURITY[m].max) { mat = MATURITY[m]; break; }
+  }
+  var sorted = DIMS.slice().sort(function(a, b) { return ds[a.key] - ds[b.key]; });
 
-  document.getElementById('load-status').textContent='Generating personalised recommendations...';
-  let recs=[];
-  try{
-    const prompt=`You are an expert advisor helping creative leaders integrate AI into their work. A leader just completed a self-assessment. Their scores (0-100) across five dimensions are:
-- Principles clarity: ${ds.principles}
-- Tool fluency: ${ds.fluency}
-- Governance: ${ds.governance}
-- Team alignment: ${ds.alignment}
-- Brand system health: ${ds.brand}
-Overall maturity level: ${mat.label} (${overall}/100)
-Generate exactly 4 prioritised recommendations tailored to these scores. Format your response as a JSON array only, no preamble, no markdown. Each item: "area" (dimension name), "priority" ("high" or "medium"), "text" (2-3 sentences, specific, actionable, warm coaching tone). Lead with the lowest-scoring dimensions.`;
-    const resp=await fetch('https://brittnilm-ux.github.io/ai-readiness-assessment/',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({model:'claude-sonnet-4-20250514',max_tokens:1000,messages:[{role:'user',content:prompt}]})});
-    const data=await resp.json();
-    const raw=data.content.map(c=>c.text||'').join('').replace(/```json|```/g,'').trim();
-    recs=JSON.parse(raw);
-  }catch(e){
-    recs=sorted.slice(0,4).map((d,i)=>({area:d.name,priority:i<2?'high':'medium',text:`Your ${d.name.toLowerCase()} score of ${ds[d.key]} suggests this is a meaningful growth area. Start by running a structured conversation with your leadership team to surface assumptions and misalignments. From there, identify one concrete policy or practice change you can implement in the next 30 days.`}));
+  document.getElementById('load-status').textContent = 'Generating personalised recommendations...';
+
+  var prompt = 'You are an expert advisor helping creative leaders integrate AI into their work. Scores (0-100): Principles clarity: ' + ds.principles + ', Tool fluency: ' + ds.fluency + ', Governance: ' + ds.governance + ', Team alignment: ' + ds.alignment + ', Brand system health: ' + ds.brand + '. Overall maturity: ' + mat.label + ' (' + overall + '/100). Generate exactly 4 prioritised recommendations as a JSON array only (no markdown, no preamble). Each item: "area" (dimension name), "priority" ("high" or "medium"), "text" (2-3 sentences, specific, actionable, warm coaching tone). Lead with lowest-scoring dimensions.';
+
+  fetch('https://api.anthropic.com/v1/messages', {
+    method: 'POST',
+    headers: {
+      'Content-Type': 'application/json',
+      'x-api-key': API_KEY,
+      'anthropic-version': '2023-06-01',
+      'anthropic-dangerous-direct-browser-access': 'true'
+    },
+    body: JSON.stringify({
+      model: 'claude-sonnet-4-20250514',
+      max_tokens: 1000,
+      messages: [{ role: 'user', content: prompt }]
+    })
+  }).then(function(r) { return r.json(); }).then(function(data) {
+    var raw = '';
+    for (var i = 0; i < data.content.length; i++) raw += (data.content[i].text || '');
+    raw = raw.replace(/```json|```/g, '').trim();
+    renderReport(ds, overall, mat, JSON.parse(raw), sorted);
+    show('s-report');
+  }).catch(function() {
+    var recs = [];
+    for (var i = 0; i < 4; i++) {
+      recs.push({ area: sorted[i].name, priority: i < 2 ? 'high' : 'medium', text: 'Your ' + sorted[i].name.toLowerCase() + ' score of ' + ds[sorted[i].key] + ' suggests this is a meaningful growth area. Start by running a structured conversation with your leadership team to surface assumptions and misalignments. From there, identify one concrete change you can implement in the next 30 days.' });
+    }
+    renderReport(ds, overall, mat, recs, sorted);
+    show('s-report');
+  });
+}
+
+function renderReport(ds, overall, mat, recs, sorted) {
+  document.getElementById('rep-headline').innerHTML = 'Your team is <em>' + mat.label.toLowerCase() + '</em>';
+  document.getElementById('rep-intro').textContent = mat.desc;
+  document.getElementById('mat-badge').innerHTML = '<span style="display:inline-flex;align-items:center;padding:6px 14px;border-radius:20px;font-size:12px;font-weight:500;background:' + mat.color + '22;color:' + mat.color + ';border:0.5px solid ' + mat.color + '44">' + mat.label + ' — ' + overall + ' / 100</span>';
+
+  var sg = document.getElementById('score-grid');
+  sg.innerHTML = '';
+  for (var i = 0; i < DIMS.length; i++) {
+    var d = DIMS[i], v = ds[d.key];
+    sg.innerHTML += '<div class="sc"><div class="sc-lbl">' + d.name + '</div><div class="sc-val">' + v + '</div><div class="sc-bar-o"><div class="sc-bar-i" style="width:' + v + '%;background:' + d.color + '"></div></div></div>';
   }
 
-  renderReport(ds,overall,mat,recs,sorted);
-  show('s-report');
+  if (radarChart) { radarChart.destroy(); radarChart = null; }
+  var canvas = document.getElementById('radar-canvas');
+  radarChart = new Chart(canvas.getContext('2d'), {
+    type: 'radar',
+    data: {
+      labels: DIMS.map(function(d) { return d.name; }),
+      datasets: [
+        { label: 'Your team', data: DIMS.map(function(d) { return ds[d.key]; }), backgroundColor: 'rgba(139,111,71,0.15)', borderColor: '#8B6F47', borderWidth: 2, pointBackgroundColor: '#8B6F47', pointRadius: 4 },
+        { label: 'Peer average', data: PEERS, backgroundColor: 'rgba(107,82,64,0.05)', borderColor: 'rgba(107,82,64,0.4)', borderWidth: 1.5, borderDash: [4,4], pointBackgroundColor: 'rgba(107,82,64,0.4)', pointRadius: 3 }
+      ]
+    },
+    options: { responsive: true, maintainAspectRatio: false, plugins: { legend: { display: false } }, scales: { r: { min: 0, max: 100, ticks: { stepSize: 25, font: { size: 10 }, color: '#9C8B78' }, grid: { color: 'rgba(0,0,0,0.08)' }, pointLabels: { font: { size: 11 }, color: '#6B5240' } } } }
+  });
+
+  var bw = document.getElementById('benchmarks');
+  bw.innerHTML = '';
+  for (var i = 0; i < DIMS.length; i++) {
+    var d = DIMS[i], v = ds[d.key], p = PEERS[i];
+    bw.innerHTML += '<div class="bench-row"><span class="bench-lbl">' + d.name + '</span><div class="bench-track"><div class="bench-fill" style="width:' + v + '%;background:' + d.color + '"></div><div class="bench-peer" style="left:' + p + '%"></div></div><span class="bench-val">' + v + '</span></div>';
+  }
+
+  var rw = document.getElementById('recs');
+  rw.innerHTML = '';
+  for (var i = 0; i < recs.length; i++) {
+    var r = recs[i];
+    rw.innerHTML += '<div class="rec-item' + (r.priority === 'high' ? ' hi' : '') + '"><div class="rec-area">' + r.area + '</div><div class="rec-txt">' + r.text + '</div></div>';
+  }
+
+  var lg = document.getElementById('lib-grid');
+  lg.innerHTML = '';
+  for (var i = 0; i < LIB.length; i++) {
+    lg.innerHTML += '<div class="lib-card"><div class="lib-name">' + LIB[i].n + '</div><div class="lib-desc">' + LIB[i].d + '</div></div>';
+  }
+
+  var matKey = mat.label.toLowerCase();
+  var dimKey = sorted[0].key;
+  document.getElementById('plan-intro-text').textContent = 'Based on your results, we have prepared two personalised plans: one for your maturity level (' + mat.label + ') and one focused on your lowest-scoring dimension (' + sorted[0].name + ', ' + ds[sorted[0].key] + '/100).';
+
+  var tabs = document.getElementById('plan-tabs');
+  var contents = document.getElementById('plan-contents');
+  tabs.innerHTML = '';
+  contents.innerHTML = '';
+
+  var keys = [matKey, dimKey];
+  var labels = [mat.label + ' maturity plan', sorted[0].name + ' plan'];
+
+  for (var pi = 0; pi < keys.length; pi++) {
+    (function(idx) {
+      var plan = PLANS[keys[idx]];
+      if (!plan) return;
+      var isActive = idx === 0;
+      var tab = document.createElement('button');
+      tab.className = 'plan-tab' + (isActive ? ' active' : '');
+      tab.textContent = labels[idx];
+      if (isActive) tab.style.background = plan.color;
+      tab.onclick = function() {
+        var allTabs = document.querySelectorAll('.plan-tab');
+        var allContents = document.querySelectorAll('.plan-content');
+        for (var t = 0; t < allTabs.length; t++) {
+          allTabs[t].classList.toggle('active', t === idx);
+          allTabs[t].style.background = t === idx ? PLANS[keys[t]].color : '';
+        }
+        for (var c = 0; c < allContents.length; c++) {
+          allContents[c].classList.toggle('active', c === idx);
+        }
+      };
+      tabs.appendChild(tab);
+
+      var content = document.createElement('div');
+      content.className = 'plan-content' + (isActive ? ' active' : '');
+      var html = '<div class="plan-intro" style="border-left-color:' + plan.color + '">' + plan.intro + '</div>';
+      for (var w = 0; w < plan.weeks.length; w++) {
+        var week = plan.weeks[w];
+        html += '<div class="week-banner" style="background:' + plan.color + '"><div class="week-lbl">' + week.label + '</div><div class="week-theme">' + week.theme + '</div></div><div class="task-list">';
+        for (var t = 0; t < week.tasks.length; t++) {
+          var task = week.tasks[t];
+          html += '<div class="task-item" style="border-left-color:' + plan.color + '"><div class="task-day" style="color:' + plan.color + '">' + task.day + '</div><div class="task-title">' + task.title + '</div><div class="task-desc">' + task.desc + '</div><div class="task-outcome">Outcome: ' + task.outcome + '</div></div>';
+        }
+        html += '</div>';
+      }
+      html += '<div class="plan-reflection">' + plan.reflection + '</div>';
+      content.innerHTML = html;
+      contents.appendChild(content);
+    })(pi);
+  }
 }
 
-function renderReport(ds,overall,mat,recs,sorted){
-  document.getElementById('rep-headline').innerHTML=`Your team is <em>${mat.label.toLowerCase()}</em>`;
-  document.getElementById('rep-intro').textContent=mat.desc;
-  document.getElementById('mat-badge').innerHTML=`<span style="display:inline-flex;align-items:center;gap:8px;padding:6px 14px;border-radius:20px;font-size:12px;font-weight:500;background:${mat.color}22;color:${mat.color};border:.5px solid ${mat.color}44">${mat.label} — ${overall} / 100</span>`;
+document.addEventListener('DOMContentLoaded', function() {
+  document.getElementById('begin-btn').onclick = startAssessment;
+  document.getElementById('btn-next').onclick = nextQ;
+  document.getElementById('btn-prev').onclick = prevQ;
+  document.getElementById('restart-btn').onclick = startAssessment;
+});
 
-  const sg=document.getElementById('score-grid');sg.innerHTML='';
-  DIMS.forEach(d=>{
-    const v=ds[d.key];
-    sg.innerHTML+=`<div class="sc"><div class="sd">${d.name}</div><div class="sv">${v}</div><div class="sb-o"><div class="sb-i" style="width:${v}%;background:${d.color}"></div></div></div>`;
-  });
-
-  const bw=document.getElementById('benchmarks');bw.innerHTML='';
-  DIMS.forEach((d,i)=>{
-    const v=ds[d.key],p=PEERS[i];
-    bw.innerHTML+=`<div class="bench-row"><span class="bench-lbl">${d.name}</span><div class="bench-track"><div class="bench-fill" style="width:${v}%;background:${d.color}"></div><div class="bench-peer" style="left:${p}%"></div></div><span class="bench-val">${v}</span></div>`;
-  });
-
-  const rw=document.getElementById('recs');rw.innerHTML='';
-  recs.forEach(r=>{
-    rw.innerHTML+=`<div class="rec-item${r.priority==='high'?' hi':''}"><div class="rec-area">${r.area}</div><div class="rec-txt">${r.text}</div></div>`;
-  });
-
-  const lg=document.getElementById('lib-grid');lg.innerHTML='';
-  LIB.forEach(item=>{
-    lg.innerHTML+=`<div class="lib-card"><div class="lib-name">${item.n}</div><div class="lib-desc">${item.d}</div></div>`;
-  });
-
-  renderActionPlans(ds,overall,mat,sorted);
-}
-
-function renderActionPlans(ds,overall,mat,sorted){
-  const matKey=mat.label.toLowerCase();
-  const lowestDimKey=sorted[0].key;
-  const planIntro=document.getElementById('plan-intro-text');
-  planIntro.textContent=`Based on your results, we've prepared two personalised plans: one for your maturity level (${mat.label}) and one focused on your lowest-scoring dimension (${sorted[0].name}, ${ds[sorted[0].key]}/100).`;
-
-  const tabs=document.getElementById('plan-tabs');
-  const contents=document.getElementById('plan-contents');
-  tabs.innerHTML='';contents.innerHTML='';
-
-  const planKeys=[matKey, lowestDimKey];
-  const planLabels=[`${mat.label} maturity plan`, `${sorted[0].name} plan`];
-
-  planKeys.forEach((key,idx)=>{
-    const plan=PLANS[key];
-    if(!plan)return;
-    const isActive=idx===0;
-    const tab=document.createElement('button');
-    tab.className='plan-tab'+(isActive?' active':'');
-    tab.textContent=planLabels[idx];
-    if(isActive)tab.style.background=plan.color;
-    tab.onclick=()=>{
-      document.querySelectorAll('.plan-tab').forEach((t,ti)=>{
-        t.classList.toggle('active',ti===idx);
-        t.style.background=ti===idx?PLANS[planKeys[ti]].color:'';
-      });
-      document.querySelectorAll('.plan-content').forEach((c,ci)=>c.classList.toggle('active',ci===idx));
-    };
-    tabs.appendChild(tab);
-
-    const content=document.createElement('div');
-    content.className='plan-content'+(isActive?' active':'');
-    let html=`<div class="plan-intro" style="border-left-color:${plan.color}">${plan.intro}</div>`;
-    plan.weeks.forEach(week=>{
-      html+=`<div class="week-banner" style="background:${plan.color}"><div class="wl">${week.label}</div><div class="wt">${week.theme}</div></div>`;
-      html+=`<div class="task-list">`;
-      week.tasks.forEach(task=>{
-        html+=`<div class="task-item" style="border-left-color:${plan.color}">
-          <div class="task-day" style="color:${plan.color}">${task.day}</div>
-          <div class="task-title">${task.title}</div>
-          <div class="task-desc">${task.desc}</div>
-          <div class="task-outcome">Outcome: ${task.outcome}</div>
-        </div>`;
-      });
-      html+=`</div>`;
-    });
-    html+=`<div class="plan-reflection">${plan.reflection}</div>`;
-    content.innerHTML=html;
-    contents.appendChild(content);
-  });
-}
+})();
 </script>
+</body>
+</html>
