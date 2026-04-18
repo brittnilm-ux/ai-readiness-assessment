@@ -524,7 +524,7 @@ async function generateReport(){
 - Brand system health: ${ds.brand}
 Overall maturity level: ${mat.label} (${overall}/100)
 Generate exactly 4 prioritised recommendations tailored to these scores. Format your response as a JSON array only, no preamble, no markdown. Each item: "area" (dimension name), "priority" ("high" or "medium"), "text" (2-3 sentences, specific, actionable, warm coaching tone). Lead with the lowest-scoring dimensions.`;
-    const resp=await fetch('https://api.anthropic.com/v1/messages',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({model:'claude-sonnet-4-20250514',max_tokens:1000,messages:[{role:'user',content:prompt}]})});
+    const resp=await fetch('https://brittnilm-ux.github.io/ai-readiness-assessment/',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({model:'claude-sonnet-4-20250514',max_tokens:1000,messages:[{role:'user',content:prompt}]})});
     const data=await resp.json();
     const raw=data.content.map(c=>c.text||'').join('').replace(/```json|```/g,'').trim();
     recs=JSON.parse(raw);
